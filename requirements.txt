@@ -1,0 +1,5 @@
+fastapi[all]
+PyMySQL
+SQLAlchemy
+alembic
+pytest

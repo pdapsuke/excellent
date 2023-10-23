@@ -1,0 +1,67 @@
+@startuml excellent_tables
+entity users {
+  * id INT auto_increment (PK)
+  ---
+  * username VARCHAR(255)
+  * email VARCHAR(255)
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity batting_centers {
+  * id INT auto_increment (PK)
+  --
+	* place_id INT
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity machine_informations {
+  * id INT auto_increment (PK)
+  --
+  * ball_speed JSONTEXT
+	* pitch_type JSONTEXT
+  * batter_box ENUM
+  * user_id INT (FK)
+	* batting_center_id INT(FK)
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity itta_users_centers {
+  * id INT auto_increment (PK)
+  --
+	* user_id INT (FK)
+	* batting_center_id INT(FK)
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity atta_users_machines {
+  * id INT auto_increment (PK)
+  --
+	* user_id INT (FK)
+	* machine_info_id INT(FK)
+  * created DATETIME
+  * updated DATETIME
+}
+
+entity nakatta_users_machines {
+  * id INT auto_increment (PK)
+  --
+	* user_id INT (FK)
+	* machine_info_id INT(FK)
+  * created DATETIME
+  * updated DATETIME
+}
+
+machine_informations }o--|| users
+machine_informations }o--|| batting_centers
+machine_informations ||--o{ atta_users_machines
+users ||--o{ itta_users_centers
+batting_centers ||--o{ itta_users_centers
+users ||-r-o{ atta_users_machines
+users ||--o{ nakatta_users_machines
+machine_informations ||-l-o{ nakatta_users_machines
+
+@enduml
