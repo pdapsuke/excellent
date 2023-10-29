@@ -6,7 +6,8 @@
       <v-app-bar-title>
         <div @click="useRouter().push('/')" style="cursor: pointer;">SampleApp</div>
       </v-app-bar-title>
-      <v-btn :icon="mdiLogout"></v-btn>
+      <div v-if="auth.authenticated()">ようこそ、{{ username }}さん</div>
+      <v-btn v-if="auth.authenticated()" :icon="mdiLogout" @click="logout()"></v-btn>
     </v-app-bar>
     <!-- <<< ヘッダー -->
 
@@ -53,6 +54,9 @@
 <script setup lang="ts">
 import { mdiAccount, mdiNote, mdiLogout, mdiLogin, mdiInformation } from '@mdi/js'
 
+const auth = useAuth()
+const username = useAuth().getUsername<string>()
+
 interface MenuItem {
   icon: string
   name: string
@@ -77,6 +81,11 @@ const menu = ref<Array<MenuItem>>([
     path: "/users/",
   },
 ])
+
+function logout() {
+  useAuth().logout()
+  useRouter().push({path: "/signin"})
+}
 </script>
 
 <style lang="scss">

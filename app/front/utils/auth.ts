@@ -5,12 +5,6 @@ export const useAuth = () => {
   return Auth
 }
 
-interface tokenPayload {
-  sub: string
-  scopes: string[]
-  exp: number
-}
-
 class Auth {
   // Cookieのキー
   private static ACCESS_TOKEN_KEY: string = "__access_token"
@@ -46,7 +40,7 @@ class Auth {
   }
 
   // Cookieに保存されているJWTのpayloadをオブジェクト形式で取得する
-  public static getPayload(): tokenPayload | null {
+  public static getPayload(): any | null {
     const cookie = useCookie(this.ACCESS_TOKEN_KEY)
     let token = cookie.value
     if (!token) return null
@@ -58,7 +52,7 @@ class Auth {
   // JWTのペイロードからユーザー名を取得する
   public static getUsername(): string | null {
     let payload = Auth.getPayload();
-    return (payload && !!payload.sub) ? payload.sub : null
+    return (payload && !!payload["cognito:username"]) ? payload["cognito:username"] : null
   }
 
   // JWTのペイロードのパーミッションに指定したパーミッションが含まれているかを判定する

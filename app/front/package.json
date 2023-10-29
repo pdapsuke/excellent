@@ -12,6 +12,7 @@
     "@mdi/js": "^7.2.96",
     "@nuxt/devtools": "latest",
     "@types/node": "^18",
+    "aws-amplify": "^5.3.11",
     "nuxt": "^3.6.0",
     "sass": "^1.63.6",
     "typescript": "latest",
