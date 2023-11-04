@@ -2,9 +2,6 @@
   <div>
     <div class="mb-3">
       <div class="text-h4">Items</div>
-      {{ pref }}
-      {{ city }}
-      {{ cities }}
       <v-select
         label="prefectures"
         v-model="pref"
@@ -22,36 +19,29 @@
         v-model="city"
       >
       </v-select>
+      <v-btn
+        color="primary"
+        @click="submit"
+      >検索</v-btn>
     </div>
-    <v-table>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>title</th>
-          <th>action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in items" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.title }}</td>
-          <td>
-            <div class="d-flex">
-              <div>
-                <v-btn icon flat >
-                  <v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
-                </v-btn>
-              </div>
-              <div>
-                <v-btn icon flat >
-                  <v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
-                </v-btn>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
+    <div class="mb-3">
+      <v-table         >
+        <thead>
+          <tr>
+            <th class="text-left">バッティングセンター名</th>
+            <th class="text-left">所在地</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="battingcenter in battingcenters"
+            :key="battingcenter.place_id">
+            <td>{{ battingcenter.name }}</td>
+            <td>{{ battingcenter.formatted_address }}</td>
+          </tr>
+        </tbody>
+      </v-table>      
+    </div>
   </div>
 </template>
 
@@ -63,24 +53,25 @@ import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 const pref = ref<number>(1)
 const city = ref<number>()
 let cities = ref<any>()
-
-const items = ref<any>([
-    {id: "1", "title": "Chapter1 FastAPI入門"},
-    {id: "2", "title": "Chapter2 RDB入門"},
-    {id: "3", "title": "Chapter2.5 SQLAlchemyを利用したデータベースの操作"},
-    {id: "4", "title": "Chapter3 Alembicを利用したマイグレーションを実装してみよう"},
-    {id: "5", "title": "Chapter4 FastAPIでCRUDを実装してみよう"},
-])
+let battingcenters = ref<any>()
 
 // 都道府県一覧取得
 const { data: prefectures, pending:a, error:b, refresh: c } = await usePrefectureCityApi().getAllPrefecture()
 const { data: citiesFromAPI, pending: d, error: e, refresh: f } = await usePrefectureCityApi().getCity(1)
+console.log(prefectures)
 cities = citiesFromAPI
 
 async function fetchCities() {
   // 市区町村一覧APIを呼び出す
   const { data, pending, error, refresh } = await usePrefectureCityApi().getCity(pref.value)
+  console.log(data)
   cities = data
 }
 
+async function submit() {
+  let selectedPrefectureName = await prefectures.value.find((item) => item.prefCode == pref.value).prefName
+  let selectedCityName = await cities.value.find((item) => item.cityCode == city.value).cityName
+  const { data: result, pending:hoge, error: fuga, refresh: eiya } =  await useBattingCenterApi().post(`${selectedPrefectureName} ${selectedCityName}`)
+  battingcenters.value = result.value
+}
 </script>
