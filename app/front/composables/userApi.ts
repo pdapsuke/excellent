@@ -1,9 +1,6 @@
 // ユーザー作成時のリクエストボディの型定義
 interface UserPost {
-  username: string
-  password: string
-  age: number
-  role_ids: number[]
+  jwt_token: string
 }
 
 // ユーザー更新時のリクエストボディの型定義
@@ -18,11 +15,7 @@ interface UserPut {
 interface UserResponse {
   id: number
   username: string
-  age: number
-  roles: {
-    id: number,
-    name: string
-  }[]
+  age: string
 }
 
 // useUserApiの名前で関数をエクスポート
