@@ -16,12 +16,23 @@ router = APIRouter()
 # Find Place
 @router.post("/batting_centers/")
 def get_batting_centers(
-    data: BattingCenterGetSchema
+    data: BattingCenterGetSchema,
+    session: Session = Depends(get_session),
 ):
     url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
     payload = {"query": f"{data.prefecture_city} バッティングセンター","language": "ja", "key": "***REMOVED***"}
-    response = requests.get(url, params=payload)
-    return response.json()["results"]
+    batting_centers = requests.get(url, params=payload).json()["results"]
+    for batting_center in batting_centers:
+        place_id = batting_center["place_id"]
+        registered_batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == place_id).first()
+
+        # 初めて取得したバッティングセンターはDBに登録
+        if registered_batting_center is None:
+            new_batting_center = BattingCenter(place_id = place_id)
+            session.add(new_batting_center)
+            session.commit()
+
+    return batting_centers
 
 # DBにあるバッティングセンターをすべて取得
 @router.get("/batting_centers/", response_model=List[BattingCenterResponseSchema])
