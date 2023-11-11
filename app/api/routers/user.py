@@ -3,13 +3,14 @@ import json
 import base64
 
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Response, Depends
+from fastapi import APIRouter, Response, Depends, HTTPException
 
-from models import User
+from models import User, BattingCenter
 from session import get_session
 from schema.user import (
     UserLoginSchema,
     UserResponseSchema,
+    UpdateIttaSchema,
 )
 
 router = APIRouter()
@@ -52,3 +53,33 @@ def read_users(
 ):
     users = session.query(User).offset(skip).limit(limit).all()
     return users
+
+# 行った！の更新
+@router.post("/users/me/itta", response_model=UserResponseSchema)
+def update_itta(
+    data: UpdateIttaSchema,
+    session: Session = Depends(get_session),
+):
+    user = session.query(User).filter(User.username == data.username).first()
+    if user is None:
+        raise HTTPException(status_code=400, detail=f"{data.username} not exists.")
+
+    batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == data.place_id).first()
+    if batting_center is None:
+        new_batting_center = BattingCenter(
+            place_id = data.place_id,
+        )
+        session.add(new_batting_center)
+        session.commit()
+        session.refresh(new_batting_center)
+        batting_center = new_batting_center
+
+    # 既に行ったバッティングセンターに行った！を追加
+    itta_centers = user.itta_centers
+    itta_centers.append(batting_center)
+    
+    user.itta_centers = itta_centers
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
