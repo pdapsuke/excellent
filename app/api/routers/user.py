@@ -65,21 +65,25 @@ def update_itta(
         raise HTTPException(status_code=400, detail=f"{data.username} not exists.")
 
     batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == data.place_id).first()
-    if batting_center is None:
-        new_batting_center = BattingCenter(
-            place_id = data.place_id,
-        )
-        session.add(new_batting_center)
-        session.commit()
-        session.refresh(new_batting_center)
-        batting_center = new_batting_center
 
-    # 既に行ったバッティングセンターに行った！を追加
-    itta_centers = user.itta_centers
-    itta_centers.append(batting_center)
-    
-    user.itta_centers = itta_centers
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-    return user
+    if data.itta == "yes":
+        # 行った！したバッティングセンターを新規追加
+        itta_centers = user.itta_centers
+        itta_centers.append(batting_center)
+        
+        user.itta_centers = itta_centers
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
+    elif data.itta == "no":
+        # 既に行った！したバッティングセンターを削除
+        current_itta_centers = user.itta_centers
+        new_itta_centers = list(filter(lambda x: x.place_id != data.place_id, current_itta_centers))
+        user.itta_centers = new_itta_centers
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
+    else:
+        raise HTTPException(status_code=400, detail="bad request")

@@ -35,13 +35,13 @@ def get_batting_centers(
             session.add(new_batting_center)
             session.commit()
             # 行った！フラグをfalseに設定
-            batting_center["itta"] = False
+            batting_center["itta"] = "no"
         else:
             if registered_batting_center in current_user.itta_centers:
                 # 行った！フラグをtrueに設定
-                batting_center["itta"] = True
+                batting_center["itta"] = "yes"
             else:
-                batting_center["itta"] = False
+                batting_center["itta"] = "no"
 
     return batting_centers
 

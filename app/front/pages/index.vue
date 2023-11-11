@@ -42,7 +42,15 @@
             <td>{{ battingcenter.formatted_address }}</td>
             <td>{{ battingcenter.itta_count }}</td>
             <td>
-              <v-btn icon flat @click="itta(battingcenter)">行った！</v-btn>
+              <v-switch
+                v-model="battingcenter.itta"
+                color="primary"
+                hide-details
+                true-value="yes"
+                false-value="no"
+                :label="`${battingcenter.itta}`"
+                @change="itta(battingcenter)"
+              ></v-switch>
             </td>
           </tr>
         </tbody>
@@ -82,7 +90,7 @@ async function getIttaCount(battingcenter: any) {
 async function submit() {
   let selectedPrefectureName = await prefectures.value.find((item) => item.prefCode == pref.value).prefName
   let selectedCityName = await cities.value.find((item) => item.cityCode == city.value).cityName
-  const { data: result, pending:hoge, error: fuga, refresh: eiya } =  await useBattingCenterApi().post(`${selectedPrefectureName} ${selectedCityName}`)
+  const { data: result, pending:hoge, error: fuga, refresh: eiya } =  await useBattingCenterApi().post(`${selectedPrefectureName} ${selectedCityName}`, username)
   battingcenters.value = result.value
   for (const battingcenter of battingcenters.value) {
     await getIttaCount(battingcenter)
@@ -93,7 +101,8 @@ async function submit() {
 async function itta(battingcenter: any) {
   const { data: itta_response, pending:itta_pending, error: itta_error, refresh: itta_refresh } =  await useUserApi().updateItta({
     username: username,
-    place_id: battingcenter.place_id
+    place_id: battingcenter.place_id,
+    itta: battingcenter.itta,
   })
   await getIttaCount(battingcenter)
 }

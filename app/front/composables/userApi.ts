@@ -22,6 +22,7 @@ interface UserResponse {
 interface UserIttaPut {
   username: string
   place_id: string
+  itta: string
 }
 
 // useUserApiの名前で関数をエクスポート
