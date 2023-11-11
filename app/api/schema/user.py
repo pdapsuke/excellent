@@ -18,4 +18,4 @@ class UserResponseSchema(BaseModel):
     
 class UpdateIttaSchema(BaseModel):
     username: str
-    place_id: int
+    place_id: str

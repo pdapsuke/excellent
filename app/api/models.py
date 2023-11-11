@@ -46,7 +46,7 @@ class BattingCenter(Base):
     __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
 
     id = Column(Integer, primary_key=True, index=True)
-    place_id = Column(Integer, unique=True, index=True)
+    place_id = Column(String(255, collation="utf8mb4_bin"), unique=True, index=True)
     created = Column(DateTime, default=datetime.now, nullable=False)
     updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 

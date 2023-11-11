@@ -11,7 +11,7 @@ entity users {
 entity batting_centers {
   * id INT auto_increment (PK)
   --
-	* place_id INT
+	* place_id VARCHAR(255)
   * created DATETIME
   * updated DATETIME
 }
