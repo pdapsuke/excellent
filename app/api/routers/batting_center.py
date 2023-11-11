@@ -64,3 +64,13 @@ def read_itta_count(
     itta_count = session.query(IttaUsersCenters).filter(IttaUsersCenters.batting_center_id == batting_center.id).count()
 
     return {"count": itta_count}
+
+# place_idでバッティングセンターの詳細情報を取得
+@router.get("/batting_centers/{place_id}")
+def get_batting_center(
+    place_id: str,
+):
+    url = "https://maps.googleapis.com/maps/api/place/details/json"
+    payload = {"place_id": place_id, "language": "ja", "key": "***REMOVED***"}
+    batting_center = requests.get(url, params=payload).json()
+    return batting_center

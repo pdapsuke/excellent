@@ -38,7 +38,7 @@
           <tr
             v-for="battingcenter in battingcenters"
             :key="battingcenter.place_id">
-            <td>{{ battingcenter.name }}</td>
+            <td><NuxtLink :to="`/batting_centers/${battingcenter.place_id}`">{{ battingcenter.name }}</NuxtLink></td>
             <td>{{ battingcenter.formatted_address }}</td>
             <td>{{ battingcenter.itta_count }}</td>
             <td>
