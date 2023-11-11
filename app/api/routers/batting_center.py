@@ -46,7 +46,7 @@ def get_batting_centers(
 # place_idごとの行った数
 @router.get("/batting_centers/itta/{place_id}")
 def read_itta_count(
-    place_id: int,
+    place_id: str,
     session: Session = Depends(get_session),
 ):
     batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == place_id).first()
