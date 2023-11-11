@@ -18,6 +18,12 @@ interface UserResponse {
   age: string
 }
 
+// ユーザー(行った！)更新時のリクエストボディの型定義
+interface UserIttaPut {
+  username: string
+  place_id: string
+}
+
 // useUserApiの名前で関数をエクスポート
 export const useUserApi = () => {
   return {
@@ -40,6 +46,10 @@ export const useUserApi = () => {
     // ユーザー削除
     async delete(id: number) {
         return useApi().delete<any>("deleteUser", `/users/${id}`)
-    }
+    },
+    // 行った！バッティングセンターを更新
+    async updateItta(user: UserIttaPut) {
+      return useApi().put<any>("putUserItta", "/users/me/itta", user)
+    },
   }
 }

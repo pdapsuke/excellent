@@ -55,7 +55,7 @@ def read_users(
     return users
 
 # 行った！の更新
-@router.post("/users/me/itta", response_model=UserResponseSchema)
+@router.put("/users/me/itta", response_model=UserResponseSchema)
 def update_itta(
     data: UpdateIttaSchema,
     session: Session = Depends(get_session),

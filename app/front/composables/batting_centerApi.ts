@@ -14,7 +14,7 @@ export const useBattingCenterApi = () => {
         return useApi().post<any>("getBattingCenters", "/batting_centers/", {"prefecture_city": prefecture_city})
       },
       // バッティングセンターの行った！数を取得
-      async get(place_id: number) {
+      async get(place_id: string) {
         return useApi().get<any>("getIttaCount", `/batting_centers/itta/${place_id}`)
       },
     }

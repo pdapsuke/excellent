@@ -2,7 +2,6 @@
   <div>
     <div class="mb-3">
       <div class="text-h4">Items</div>
-      {{ battingcenters }}
       <v-select
         label="prefectures"
         v-model="pref"
@@ -32,6 +31,7 @@
             <th class="text-left">バッティングセンター名</th>
             <th class="text-left">所在地</th>
             <th class="text-left">行った！数</th>
+            <th class="text-left">行った！ボタン</th>
           </tr>
         </thead>
         <tbody>
@@ -41,6 +41,9 @@
             <td>{{ battingcenter.name }}</td>
             <td>{{ battingcenter.formatted_address }}</td>
             <td>{{ battingcenter.itta_count }}</td>
+            <td>
+              <v-btn icon flat @click="itta(battingcenter)">行った！</v-btn>
+            </td>
           </tr>
         </tbody>
       </v-table>      
@@ -55,20 +58,25 @@ import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
 const pref = ref<number>(1)
 const city = ref<number>()
+const username = useAuth().getUsername<string>()
 let cities = ref<any>()
 let battingcenters = ref<any>()
 
 // 都道府県一覧取得
 const { data: prefectures, pending:a, error:b, refresh: c } = await usePrefectureCityApi().getAllPrefecture()
 const { data: citiesFromAPI, pending: d, error: e, refresh: f } = await usePrefectureCityApi().getCity(1)
-// console.log(prefectures)
 cities = citiesFromAPI
 
 async function fetchCities() {
   // 市区町村一覧APIを呼び出す
   const { data, pending, error, refresh } = await usePrefectureCityApi().getCity(pref.value)
-  // console.log(data)
   cities = data
+}
+
+async function getIttaCount(battingcenter: any) {
+    // 行った！数を返すAPIの呼び出し、行った数をオブジェクトのメンバーに追加
+    const { data: itta_count, pending:itta_count_pending, error:itta_count_error , refresh: itta_count_refresh } =  await useBattingCenterApi().get(battingcenter.place_id)
+    battingcenter.itta_count = itta_count.value.count  
 }
 
 async function submit() {
@@ -77,12 +85,17 @@ async function submit() {
   const { data: result, pending:hoge, error: fuga, refresh: eiya } =  await useBattingCenterApi().post(`${selectedPrefectureName} ${selectedCityName}`)
   battingcenters.value = result.value
   for (const battingcenter of battingcenters.value) {
-    // console.log(battingcenter)
-    // 行った！数を返すAPIの呼び出し、行った数をオブジェクトのメンバーに追加
-    const { data: itta_count, pending:itta_count_pending, error:itta_count_error , refresh: itta_count_refresh } =  await useBattingCenterApi().get(177)
-    console.log(itta_count)
-    battingcenter.itta_count = itta_count.value.count
-    // console.log(battingcenter)
-  } 
+    await getIttaCount(battingcenter)
+} 
 }
+
+// 行った！を登録
+async function itta(battingcenter: any) {
+  const { data: itta_response, pending:itta_pending, error: itta_error, refresh: itta_refresh } =  await useUserApi().updateItta({
+    username: username,
+    place_id: battingcenter.place_id
+  })
+  await getIttaCount(battingcenter)
+}
+
 </script>
