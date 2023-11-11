@@ -8,7 +8,7 @@ from schema.batting_center import (
     BattingCenterResponseSchema,
 )
 
-from models import IttaUsersCenters, BattingCenter
+from models import IttaUsersCenters, BattingCenter, User
 from session import get_session
 
 router = APIRouter()
@@ -21,8 +21,11 @@ def get_batting_centers(
 ):
     url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
     payload = {"query": f"{data.prefecture_city} バッティングセンター","language": "ja", "key": "***REMOVED***"}
+    # usernameから現在のユーザーを取得
+    current_user = session.query(User).filter(User.username == data.username).first()
     batting_centers = requests.get(url, params=payload).json()["results"]
     for batting_center in batting_centers:
+        
         place_id = batting_center["place_id"]
         registered_batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == place_id).first()
 
@@ -31,6 +34,14 @@ def get_batting_centers(
             new_batting_center = BattingCenter(place_id = place_id)
             session.add(new_batting_center)
             session.commit()
+            # 行った！フラグをfalseに設定
+            batting_center["itta"] = False
+        else:
+            if registered_batting_center in current_user.itta_centers:
+                # 行った！フラグをtrueに設定
+                batting_center["itta"] = True
+            else:
+                batting_center["itta"] = False
 
     return batting_centers
 
