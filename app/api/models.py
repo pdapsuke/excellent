@@ -1,4 +1,3 @@
-import enum
 from datetime import datetime
 from sqlalchemy import Boolean, Column, Integer, String, UniqueConstraint, text
 from sqlalchemy.orm import relationship
@@ -72,20 +71,12 @@ class IttaUsersCenters(Base):
     updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
 
-class BatterBox(str, enum.Enum):
-    BAT_AT_RIGHT = "右打席"
-    BAT_AT_LEFT = "左打席"
-    BAT_AT_BOTH = "両打席"
-
-
 class MachineInformation(Base):
     __tablename__ = "machine_informations"
     __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
 
     id = Column(Integer, primary_key=True, index=True)
-    ball_speed = Column(MEDIUMTEXT)
-    pitch_type = Column(MEDIUMTEXT) # 球種
-    batter_box = Column(Enum(BatterBox), unique=True, nullable=False) # 打席
+    config = Column(MEDIUMTEXT, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     batting_centers_id = Column(Integer, ForeignKey("batting_centers.id"), nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)

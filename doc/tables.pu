@@ -19,9 +19,7 @@ entity batting_centers {
 entity machine_informations {
   * id INT auto_increment (PK)
   --
-  * ball_speed JSONTEXT
-	* pitch_type JSONTEXT
-  * batter_box ENUM
+  * config JSONTEXT
   * user_id INT (FK)
 	* batting_center_id INT(FK)
   * created DATETIME

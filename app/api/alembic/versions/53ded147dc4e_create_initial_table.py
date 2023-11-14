@@ -1,8 +1,8 @@
 """create initial table
 
-Revision ID: b626e01c348b
+Revision ID: 53ded147dc4e
 Revises: 
-Create Date: 2023-11-11 13:45:33.299583
+Create Date: 2023-11-14 21:25:33.070221
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision: str = 'b626e01c348b'
+revision: str = '53ded147dc4e'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -63,9 +63,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_itta_users_centers_id'), 'itta_users_centers', ['id'], unique=False)
     op.create_table('machine_informations',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('ball_speed', mysql.MEDIUMTEXT(), nullable=True),
-    sa.Column('pitch_type', mysql.MEDIUMTEXT(), nullable=True),
-    sa.Column('batter_box', sa.Enum('BAT_AT_RIGHT', 'BAT_AT_LEFT', 'BAT_AT_BOTH', name='batterbox'), nullable=False),
+    sa.Column('config', mysql.MEDIUMTEXT(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('batting_centers_id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=False),
@@ -73,7 +71,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['batting_centers_id'], ['batting_centers.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('batter_box'),
     mysql_charset='utf8mb4',
     mysql_collate='utf8mb4_bin',
     mysql_engine='InnoDB'
