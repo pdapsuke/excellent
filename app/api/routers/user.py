@@ -45,7 +45,7 @@ def login_user(
     return current_user
 
 # ユーザー一覧
-@router.get("/users/", response_model=List[UserResponseSchema])
+@router.get("/users/")
 def read_users(
     skip: int = 0,  # GETパラメータ
     limit: int = 100,  # GETパラメータ
@@ -53,6 +53,24 @@ def read_users(
 ):
     users = session.query(User).offset(skip).limit(limit).all()
     return users
+
+# ユーザー詳細
+@router.get("/users/{id}", response_model=UserResponseSchema)
+def read_user(
+    id: int,
+    session: Session = Depends(get_session),
+):
+    user = session.query(User).filter(User.id == id).first()
+    itta_batting_centers = user.itta_centers
+
+    for machine_information in user.machine_informations:
+        machine_information.config = json.loads(machine_information.config)
+    
+    for itta_batting_center in itta_batting_centers:
+        for machine_information in itta_batting_center.machine_informations:        
+            machine_information.config = json.loads(machine_information.config)
+
+    return user
 
 # 行った！の更新
 @router.put("/users/me/itta", response_model=UserResponseSchema)
