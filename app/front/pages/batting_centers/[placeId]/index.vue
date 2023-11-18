@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="mb-3">
-      <div class="text-h4">{{ detail.result.name }}</div>
+      <div class="text-h4">{{ detail.name }}</div>
     </div>
   </div>
 </template>

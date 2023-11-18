@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 import requests
@@ -8,7 +9,7 @@ from schema.batting_center import (
     BattingCenterResponseSchema,
 )
 
-from models import IttaUsersCenters, BattingCenter, User
+from models import IttaUsersCenters, BattingCenter, User, MachineInformation
 from session import get_session
 
 router = APIRouter()
@@ -46,7 +47,7 @@ def get_batting_centers(
     return batting_centers
 
 # DBにあるバッティングセンターをすべて取得
-@router.get("/batting_centers/", response_model=List[BattingCenterResponseSchema])
+@router.get("/batting_centers/")
 def get_batting_centers(
     session: Session = Depends(get_session),
 ):
@@ -66,11 +67,18 @@ def read_itta_count(
     return {"count": itta_count}
 
 # place_idでバッティングセンターの詳細情報を取得
-@router.get("/batting_centers/{place_id}")
+@router.get("/batting_centers/{place_id}", response_model=BattingCenterResponseSchema)
 def get_batting_center(
     place_id: str,
+    session: Session = Depends(get_session),
 ):
     url = "https://maps.googleapis.com/maps/api/place/details/json"
     payload = {"place_id": place_id, "language": "ja", "key": "***REMOVED***"}
-    batting_center = requests.get(url, params=payload).json()
+    batting_center_name = requests.get(url, params=payload).json()["result"]["name"]
+    batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == place_id).first()
+    batting_center.name = batting_center_name
+    
+    for machine_information in batting_center.machine_informations:
+        machine_information.config = json.loads(machine_information.config)
+
     return batting_center
