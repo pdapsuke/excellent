@@ -25,7 +25,7 @@
       >検索</v-btn>
     </div>
     <div class="mb-3">
-      <v-table         >
+      <v-table>
         <thead>
           <tr>
             <th class="text-left">バッティングセンター名</th>

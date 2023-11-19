@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel
 
@@ -20,6 +21,7 @@ class MachineInformationResponseSchema(BaseModel):
     config: MachineInformationConfigSchema
     user_id: int
     batting_centers_id: int
+    updated: datetime
 
     class Config:
         orm_mode = True

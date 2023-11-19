@@ -37,9 +37,28 @@
       <div class="d-flex justify-end">
         <v-btn color="secondary" class="mr-4" type="submit" @click.prevent="post">投稿</v-btn>
       </div>
-      <div class="text-h4">球速{{ ball_speeds }}</div>
-      <div class="text-h4">球種{{ pitch_types }}</div>
-      <div class="text-h4">打席{{ batter_box }}</div>
+    </div>
+    <div class="mb-3">
+      <v-table>
+        <thead>
+          <tr>
+            <th class="text-left">球速 km/h</th>
+            <th class="text-left">球種</th>
+            <th class="text-left">打席</th>
+            <th class="text-left">更新日</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="machine_information in detail.machine_informations"
+            :key="machine_information.id">
+            <td>{{ machine_information.config.ballspeed.join(", ") }}</td>
+            <td>{{ machine_information.config.pitch_type.join(", ") }}</td>
+            <td>{{ machine_information.config.batter_box }}</td>
+            <td>{{ dateFormat(machine_information.updated) }}</td>
+          </tr>
+        </tbody>
+      </v-table>      
     </div>
   </div>
 </template>
@@ -57,9 +76,18 @@ const username = useAuth().getUsername<string>()
 
 const { data: detail, pending, error, refresh } = await useBattingCenterApi().getDetail(placeId)
 
-async function post() {
-  
+function dateFormat(datetime: string) {
+  const updated_date = new Date(datetime) 
+  const year = updated_date.getFullYear()
+  const month = updated_date.getMonth() + 1
+  const day = updated_date.getDate()
+  const hour = updated_date.getHours()
+  const minute = updated_date.getMinutes()
 
+  return `${year}/${month}/${day} ${hour}:${minute}`
+}
+
+async function post() {
   const { data: postResponse, pending: postPending, error: postError, refresh: postRefresh } = await useMachineInformationApi().post({
     ballspeed: ball_speeds.value,
     pitch_type: pitch_types.value,
@@ -67,9 +95,7 @@ async function post() {
     username: username,
     place_id: placeId,
   })
-
-  console.log(postResponse)
-
+  refresh()
 }
 
 </script>
