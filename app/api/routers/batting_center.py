@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Optional
 
 import requests
 from sqlalchemy.orm import Session
@@ -67,17 +67,31 @@ def read_itta_count(
     return {"count": itta_count}
 
 # place_idでバッティングセンターの詳細情報を取得
-@router.get("/batting_centers/{place_id}", response_model=BattingCenterResponseSchema)
+@router.get("/batting_centers/{place_id}")
 def get_batting_center(
+    username: str,
     place_id: str,
     session: Session = Depends(get_session),
 ):
+    user = session.query(User).filter(User.username == username).first()
     url = "https://maps.googleapis.com/maps/api/place/details/json"
     payload = {"place_id": place_id, "language": "ja", "key": "***REMOVED***"}
     batting_center_name = requests.get(url, params=payload).json()["result"]["name"]
     batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == place_id).first()
     batting_center.name = batting_center_name
     
+
+    for machine_information in batting_center.machine_informations:
+        if machine_information in user.atta_machines:
+            machine_information.atta = "yes"
+            machine_information.nakatta = "no"
+        elif machine_information in user.nakatta_machines:
+            machine_information.atta = "no"
+            machine_information.nakatta = "yes"
+        else:
+            machine_information.atta = "no"
+            machine_information.nakatta = "no"
+
     for machine_information in batting_center.machine_informations:
         machine_information.config = json.loads(machine_information.config)
 

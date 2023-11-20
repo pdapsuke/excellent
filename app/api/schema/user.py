@@ -11,8 +11,11 @@ class UserLoginSchema(BaseModel):
 class UserResponseSchema(BaseModel):
     username: str
     email: str
-    itta_centers: List[BattingCenterResponseSchema]
-    machine_informations: List[MachineInformationResponseSchema]
+    # itta_centers: List[BattingCenterResponseSchema]
+    # machine_informations: List[MachineInformationResponseSchema]
+    atta_machines: List[MachineInformationResponseSchema]
+    # nakatta_machines: List[MachineInformationResponseSchema]
+
 
     class Config:
         orm_mode = True
@@ -21,3 +24,9 @@ class UpdateIttaSchema(BaseModel):
     username: str
     place_id: str
     itta: str
+
+class UpdateAttaNakattaSchema(BaseModel):
+    username: str
+    machine_id: int
+    atta_nakatta: str
+    add_atta_nakatta: str
