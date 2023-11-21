@@ -46,6 +46,8 @@
             <th class="text-left">球種</th>
             <th class="text-left">打席</th>
             <th class="text-left">更新日</th>
+            <th class="text-left">あった！ボタン</th>
+            <th class="text-left">なかった！ボタン</th>
           </tr>
         </thead>
         <tbody>
@@ -56,6 +58,28 @@
             <td>{{ machine_information.config.pitch_type.join(", ") }}</td>
             <td>{{ machine_information.config.batter_box }}</td>
             <td>{{ dateFormat(machine_information.updated) }}</td>
+            <td>
+              <v-switch
+                v-model="machine_information.atta"
+                color="primary"
+                hide-details
+                true-value="yes"
+                false-value="no"
+                :label="`${machine_information.atta}`"
+                @change="atta(machine_information)"
+              ></v-switch>
+            </td>
+            <td>
+              <v-switch
+                v-model="machine_information.nakatta"
+                color="primary"
+                hide-details
+                true-value="yes"
+                false-value="no"
+                :label="`${machine_information.nakatta}`"
+                @change="nakatta(machine_information)"
+              ></v-switch>
+            </td>
           </tr>
         </tbody>
       </v-table>      
@@ -74,7 +98,7 @@ const pitch_types = ref<string[]>([])
 const batter_box = ref<string>("")
 const username = useAuth().getUsername<string>()
 
-const { data: detail, pending, error, refresh } = await useBattingCenterApi().getDetail(placeId)
+const { data: detail, pending, error, refresh } = await useBattingCenterApi().getDetail(username, placeId)
 
 function dateFormat(datetime: string) {
   const updated_date = new Date(datetime) 
@@ -97,5 +121,28 @@ async function post() {
   })
   refresh()
 }
+
+// あった！を登録/解除
+async function atta(machine_information: any) {
+  const { data: atta_response, pending:atta_pending, error: atta_error, refresh: atta_refresh } =  await useUserApi().updateAttaNakatta({
+    username: username,
+    machine_id: machine_information.id,
+    atta_nakatta: "atta",
+    add_atta_nakatta: machine_information.atta
+  })
+  refresh()
+}
+
+// なかった！を登録/解除
+async function nakatta(machine_information: any) {
+  const { data: nakatta_response, pending: nakatta_pending, error: nakatta_error, refresh: nakatta_refresh } =  await useUserApi().updateAttaNakatta({
+    username: username,
+    machine_id: machine_information.id,
+    atta_nakatta: "nakatta",
+    add_atta_nakatta: machine_information.nakatta
+  })
+  refresh()
+}
+
 
 </script>

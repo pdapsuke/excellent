@@ -25,6 +25,14 @@ interface UserIttaPut {
   itta: string
 }
 
+interface AttaNakattaUpdate {
+  username: string
+  machine_id: number
+  atta_nakatta: string
+  add_atta_nakatta: string
+}
+
+
 // useUserApiの名前で関数をエクスポート
 export const useUserApi = () => {
   return {
@@ -51,6 +59,10 @@ export const useUserApi = () => {
     // 行った！バッティングセンターを更新
     async updateItta(user: UserIttaPut) {
       return useApi().put<any>("putUserItta", "/users/me/itta", user)
+    },
+    // マシン情報のあった！なかった！を更新
+    async updateAttaNakatta(input: AttaNakattaUpdate) {
+      return useApi().put<any>("updateAttaNakatta", "/users/me/atta_nakatta", input)
     },
   }
 }
