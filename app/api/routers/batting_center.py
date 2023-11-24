@@ -9,7 +9,7 @@ from schema.batting_center import (
     BattingCenterResponseSchema,
 )
 
-from models import IttaUsersCenters, BattingCenter, User, MachineInformation
+from models import IttaUsersCenters, BattingCenter, User, MachineInformation, AttaUserMachine, NakattaUserMachine
 from session import get_session
 
 router = APIRouter()
@@ -91,6 +91,12 @@ def get_batting_center(
         else:
             machine_information.atta = "no"
             machine_information.nakatta = "no"
+
+    for machine_information in batting_center.machine_informations:
+        atta_count = session.query(AttaUserMachine).filter(AttaUserMachine.machine_info_id == machine_information.id).count()
+        nakatta_count = session.query(NakattaUserMachine).filter(NakattaUserMachine.machine_info_id == machine_information.id).count()
+        machine_information.atta_count = atta_count
+        machine_information.nakatta_count = nakatta_count
 
     for machine_information in batting_center.machine_informations:
         machine_information.config = json.loads(machine_information.config)

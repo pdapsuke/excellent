@@ -46,7 +46,9 @@
             <th class="text-left">球種</th>
             <th class="text-left">打席</th>
             <th class="text-left">更新日</th>
+            <th class="text-left">あった！数</th>
             <th class="text-left">あった！ボタン</th>
+            <th class="text-left">なかった！数</th>
             <th class="text-left">なかった！ボタン</th>
           </tr>
         </thead>
@@ -58,6 +60,7 @@
             <td>{{ machine_information.config.pitch_type.join(", ") }}</td>
             <td>{{ machine_information.config.batter_box }}</td>
             <td>{{ dateFormat(machine_information.updated) }}</td>
+            <td>{{ machine_information.atta_count }}</td>
             <td>
               <v-switch
                 v-model="machine_information.atta"
@@ -69,6 +72,7 @@
                 @change="atta(machine_information)"
               ></v-switch>
             </td>
+            <td>{{ machine_information.nakatta_count }}</td>
             <td>
               <v-switch
                 v-model="machine_information.nakatta"
@@ -97,6 +101,7 @@ const ball_speeds = ref<number[]>([])
 const pitch_types = ref<string[]>([])
 const batter_box = ref<string>("")
 const username = useAuth().getUsername<string>()
+
 
 const { data: detail, pending, error, refresh } = await useBattingCenterApi().getDetail(username, placeId)
 
@@ -143,6 +148,5 @@ async function nakatta(machine_information: any) {
   })
   refresh()
 }
-
 
 </script>

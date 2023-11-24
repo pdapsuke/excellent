@@ -16,7 +16,7 @@ from schema.machine import (
 )
 
 
-from models import IttaUsersCenters, BattingCenter, User, MachineInformation
+from models import IttaUsersCenters, BattingCenter, User, MachineInformation, AttaUserMachine, NakattaUserMachine
 from session import get_session
 
 router = APIRouter()
@@ -58,3 +58,22 @@ def create_machine_information(
     machine_information.config = config
 
     return machine_information
+
+# machine_idごとの行った数
+@router.get("/machine_informations/{machine_id}/atta_nakatta")
+def read_atta_nakatta_count(
+    machine_id: int,
+    atta_nakatta: str,
+    session: Session = Depends(get_session),
+):
+    # あった！の数を返す場合
+    if atta_nakatta == "atta":
+        atta_count = session.query(AttaUserMachine).filter(AttaUserMachine.machine_info_id == machine_id).count()
+
+        return {"count": atta_count}
+
+    # なかった！の数を返す場合
+    if atta_nakatta == "nakatta":
+        nakatta_count = session.query(NakattaUserMachine).filter(NakattaUserMachine.machine_info_id == machine_id).count()
+
+        return {"count": nakatta_count}

@@ -16,7 +16,7 @@ from schema.user import (
 
 router = APIRouter()
 
-@router.post("/users/", response_model=UserResponseSchema)
+@router.post("/users/")
 def login_user(
     data: UserLoginSchema,
     session: Session = Depends(get_session),
@@ -69,7 +69,7 @@ def read_user(
     return user
 
 # 行った！の更新
-@router.put("/users/me/itta", response_model=UserResponseSchema)
+@router.put("/users/me/itta")
 def update_itta(
     data: UpdateIttaSchema,
     session: Session = Depends(get_session),
