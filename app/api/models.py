@@ -1,9 +1,9 @@
 from datetime import datetime
-from sqlalchemy import Boolean, Column, Integer, String, UniqueConstraint, text
+
+from sqlalchemy import Column, Integer, String, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.sqltypes import DateTime, Enum
+from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 # モデルのベースクラスを定義
 from sqlalchemy.orm.decl_api import declarative_base
@@ -71,22 +71,55 @@ class IttaUsersCenters(Base):
     updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
 
-class MachineInformation(Base):
-    __tablename__ = "machine_informations"
+class BreakingBall(Base):
+    "球種を格納するテーブル"
+    __tablename__ = "breaking_balls"
     __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
 
     id = Column(Integer, primary_key=True, index=True)
-    config = Column(MEDIUMTEXT, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    batting_centers_id = Column(Integer, ForeignKey("batting_centers.id"), nullable=False)
+    name = Column(String(255, collation="utf8mb4_bin"), unique=True, nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)
     updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+
+
+class BallSpeed(Base):
+    "球速の値一覧を格納するテーブル"
+    __tablename__ = "ball_speeds"
+    __table_args__ = {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
+
+    id = Column(Integer, primary_key=True, index=True)
+    speed = Column(Integer, unique=True, nullable=False)
+    created = Column(DateTime, default=datetime.now, nullable=False)
+    updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+
+
+class MachineInformation(Base):
+    __tablename__ = "machine_informations"
+    __table_args__ = (
+        CheckConstraint("batter_box IN ('右', '左', '両')"),
+        {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    batting_center_id = Column(Integer, ForeignKey("batting_centers.id"), nullable=False)
+    created = Column(DateTime, default=datetime.now, nullable=False)
+    updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+
+    # batter_boxに登録する値は、'右', '左', '両'に制限する
+    batter_box = Column(String(255, collation="utf8mb4_bin"), nullable=False)
 
     # usersテーブルとのリレーション
     user = relationship("User", back_populates="machine_informations")
 
     # batting_centersテーブルとのリレーション
     batting_center = relationship("BattingCenter", back_populates="machine_informations")
+
+    # beeaking_ballsテーブルとの多対多のリレーション（中間テーブル：machines_breaking_balls）
+    beeaking_balls = relationship("BreakingBall", secondary="machines_breaking_balls")
+
+    # ball_speedsテーブルとの多対多のリレーション（中間テーブル：machines_breaking_balls）
+    ball_speeds = relationship("BallSpeed", secondary="machines_ball_speeds")
 
     # usersテーブルとの多対多のリレーション（中間テーブル：atta_users_machines）
     atta_users = relationship("User", secondary="atta_users_machines", back_populates="atta_machines")
@@ -95,17 +128,47 @@ class MachineInformation(Base):
     nakatta_users = relationship("User", secondary="nakatta_users_machines", back_populates="nakatta_machines")
 
 
+class MachineBreakingBall(Base):
+    """machine_informationsとbreaking_ballsの中間テーブル"""
+    __tablename__ = "machines_breaking_balls"
+    __table_args__ = (
+        UniqueConstraint("machine_id", "breaking_ball_id", name="unique_idx_machine_id_breaking_ball_id"),
+        {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    machine_id = Column(Integer, ForeignKey("machine_informations.id"), nullable=False)
+    breaking_ball_id = Column(Integer, ForeignKey("breaking_balls.id"), nullable=False)
+    created = Column(DateTime, default=datetime.now, nullable=False)
+    updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+
+
+class MachineBallSpeed(Base):
+    """machine_informationsとball_speedsの中間テーブル"""
+    __tablename__ = "machines_ball_speeds"
+    __table_args__ = (
+        UniqueConstraint("machine_id", "ball_speed_id", name="unique_idx_machine_id_ball_speed_id"),
+        {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    machine_id = Column(Integer, ForeignKey("machine_informations.id"), nullable=False)
+    ball_speed_id = Column(Integer, ForeignKey("ball_speeds.id"), nullable=False)
+    created = Column(DateTime, default=datetime.now, nullable=False)
+    updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
+
+
 class AttaUserMachine(Base):
     """usersとmachine_informationsの中間テーブル（あった）"""
     __tablename__ = "atta_users_machines"
     __table_args__ = (
-        UniqueConstraint("user_id", "machine_info_id", name="unique_idx_atta_userid_machineinfoid"),
+        UniqueConstraint("user_id", "machine_id", name="unique_idx_atta_userid_machineid"),
         {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
     )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    machine_info_id = Column(Integer, ForeignKey("machine_informations.id"), nullable=False)
+    machine_id = Column(Integer, ForeignKey("machine_informations.id"), nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)
     updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
 
@@ -114,12 +177,12 @@ class NakattaUserMachine(Base):
     """usersとmachine_informationsの中間テーブル（なかった）"""
     __tablename__ = "nakatta_users_machines"
     __table_args__ = (
-        UniqueConstraint("user_id", "machine_info_id", name="unique_idx_nakatta_userid_machineinfoid"),
+        UniqueConstraint("user_id", "machine_id", name="unique_idx_nakatta_userid_machineid"),
         {'mysql_engine':'InnoDB', 'mysql_charset':'utf8mb4','mysql_collate':'utf8mb4_bin'}
     )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    machine_info_id = Column(Integer, ForeignKey("machine_informations.id"), nullable=False)
+    machine_id = Column(Integer, ForeignKey("machine_informations.id"), nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)
     updated = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
