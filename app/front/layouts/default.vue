@@ -53,6 +53,7 @@
 
 <script setup lang="ts">
 import { mdiAccount, mdiNote, mdiLogout, mdiLogin, mdiInformation } from '@mdi/js'
+import { Auth } from 'aws-amplify'
 
 const auth = useAuth()
 const username = useAuth().getUsername<string>()
@@ -82,7 +83,12 @@ const menu = ref<Array<MenuItem>>([
   },
 ])
 
-function logout() {
+async function logout() {
+  try {
+  await Auth.signOut()
+  } catch (error) {
+    console.log('error signing out', error)
+  }
   useAuth().logout()
   useRouter().push({path: "/signin"})
 }

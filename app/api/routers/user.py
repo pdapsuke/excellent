@@ -1,9 +1,7 @@
-from typing import List
-import json
-import base64
-
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Response, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
+from fastapi_cloudauth.cognito import CognitoClaims
 
 from models import User, BattingCenter, MachineInformation
 from session import get_session
@@ -13,37 +11,29 @@ from schema.user import (
     UpdateIttaSchema,
     UpdateAttaNakattaSchema,
 )
+from auth import get_current_user
 
 router = APIRouter()
 
-@router.post("/users/")
-def login_user(
-    data: UserLoginSchema,
+@router.post("/users/signin")
+def signin_user(
     session: Session = Depends(get_session),
+    current_user: CognitoClaims = Depends(get_current_user)
 ):
-    payload = data.jwt_token.split(".")[1]
+    # current_userがDBに登録済みか、メールアドレスで検索
+    registared_user = session.query(User).filter(User.email == current_user.email).first()
 
-    # Base64デコード
-    decoded_payload = base64.urlsafe_b64decode(payload + '=' * (4 - len(payload) % 4)).decode()
-
-    # JSONデコード
-    json_payload = json.loads(decoded_payload)
-
-    # return json_payload
-
-    current_user = session.query(User).filter(User.username == json_payload["cognito:username"]).first()
-
-    if current_user is None:
+    # current_userがDBに未登録の場合、新規登録
+    if registared_user is None:
         user = User(
-            username = json_payload["cognito:username"],
-            email = json_payload["email"],
+            username = current_user.username,
+            email = current_user.email,
         )
         session.add(user)
         session.commit()
-        session.refresh(user)
-        return {"status": 200}
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "user created."})
 
-    return {"status": 200}
+    return JSONResponse(status_code=200, content={"message": "user already exists."})
 
 # ユーザー一覧
 @router.get("/users/")

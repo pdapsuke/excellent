@@ -4,3 +4,4 @@ SQLAlchemy
 alembic
 pytest
 requests
+fastapi-cloudauth

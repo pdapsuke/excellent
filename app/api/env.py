@@ -6,3 +6,6 @@ class Environment(BaseSettings):
     db_port: str
     db_host: str
     db_name: str
+    aws_region: str
+    cognito_userpool_id: str
+    cognito_client_id: str

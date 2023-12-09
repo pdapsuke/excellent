@@ -51,8 +51,8 @@ async function signIn() {
   }
   useAuth().login(data.value.signInUserSession.idToken.jwtToken)
   console.log(data.value.signInUserSession.idToken.jwtToken)
-  useUserApi().create({jwt_token: data.value.signInUserSession.idToken.jwtToken})
-  useRouter().push({path: "/"})
+  // useUserApi().create({jwt_token: data.value.signInUserSession.idToken.jwtToken})
+  // useRouter().push({path: "/"})
 }
 
 </script>
