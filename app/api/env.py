@@ -9,3 +9,5 @@ class Environment(BaseSettings):
     aws_region: str
     cognito_userpool_id: str
     cognito_client_id: str
+    find_place_url: str
+    find_place_api_key: str

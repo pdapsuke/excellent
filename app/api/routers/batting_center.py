@@ -4,29 +4,44 @@ from typing import List, Optional
 import requests
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Response, Depends, HTTPException
+from fastapi_cloudauth.cognito import CognitoClaims
+
 from schema.batting_center import (
     BattingCenterGetSchema,
     BattingCenterResponseSchema,
 )
-
 from models import IttaUsersCenters, BattingCenter, User, MachineInformation, AttaUserMachine, NakattaUserMachine
 from session import get_session
+from auth import get_current_user
+from env import Environment
+
 
 router = APIRouter()
+env = Environment()
 
-# Find Place
+
+# バッティングセンター検索API
 @router.post("/batting_centers/")
 def get_batting_centers(
-    data: BattingCenterGetSchema,
+    prefecture_city: str,
+    current_user: CognitoClaims = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-    payload = {"query": f"{data.prefecture_city} バッティングセンター","language": "ja", "key": "***REMOVED***"}
-    # usernameから現在のユーザーを取得
-    current_user = session.query(User).filter(User.username == data.username).first()
-    batting_centers = requests.get(url, params=payload).json()["results"]
-    for batting_center in batting_centers:
-        
+    # DBに登録済みのユーザーを取得、見つからなければ400エラー
+    registered_user = session.query(User).filter(User.email == current_user.email).first()
+    if registered_user is None:
+        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+
+    # Google FindPlace APIへリクエスト
+    payload = {"query": f"{prefecture_city} バッティングセンター","language": "ja", "key": env.find_place_api_key}
+    responses = requests.get(env.find_place_url, params=payload).json()["results"]
+
+    # FindPlace APIからのレスポンスを、prefecture_city条件に合わせてフィルタリング
+    filtered_responses = list(filter(lambda x: prefecture_city in x["formatted_address"], responses))
+
+    for batting_center in filtered_responses:
+
+        # API取得したバッティングセンターがDBに登録済みか確認
         place_id = batting_center["place_id"]
         registered_batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == place_id).first()
 
@@ -35,16 +50,18 @@ def get_batting_centers(
             new_batting_center = BattingCenter(place_id = place_id)
             session.add(new_batting_center)
             session.commit()
+
             # 行った！フラグをfalseに設定
             batting_center["itta"] = "no"
         else:
-            if registered_batting_center in current_user.itta_centers:
+            if registered_batting_center in registered_user.itta_centers:
+
                 # 行った！フラグをtrueに設定
                 batting_center["itta"] = "yes"
             else:
                 batting_center["itta"] = "no"
 
-    return batting_centers
+    return filtered_responses
 
 # DBにあるバッティングセンターをすべて取得
 @router.get("/batting_centers/")
