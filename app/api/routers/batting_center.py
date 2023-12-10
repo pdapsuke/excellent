@@ -21,12 +21,15 @@ env = Environment()
 
 
 # バッティングセンター検索API
-@router.post("/batting_centers/")
+@router.post("/batting_centers/", response_model=List[BattingCenterResponseSchema])
 def get_batting_centers(
     prefecture_city: str,
     current_user: CognitoClaims = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
+    # レスポンスで返すバッティングセンター情報を格納するリスト
+    batting_centers = []
+
     # DBに登録済みのユーザーを取得、見つからなければ400エラー
     registered_user = session.query(User).filter(User.email == current_user.email).first()
     if registered_user is None:
@@ -39,29 +42,42 @@ def get_batting_centers(
     # FindPlace APIからのレスポンスを、prefecture_city条件に合わせてフィルタリング
     filtered_responses = list(filter(lambda x: prefecture_city in x["formatted_address"], responses))
 
-    for batting_center in filtered_responses:
+    for response in filtered_responses:
+
+        # レスポンスで返すバッティングセンターの情報を定義
+        batting_center = BattingCenterResponseSchema(
+            id = 0, # NOTE: 仮置き
+            place_id = response["place_id"],
+            name = response["name"],
+            formatted_address = response["formatted_address"].split("、", 1)[-1], # "日本、"という文字列が先頭につくため加工する
+            photos = response["photos"] if "photos" in response else None,
+            itta_count = 0, # NOTE: 仮置き
+            itta = "no" # NOTE: 仮置き
+        )
 
         # API取得したバッティングセンターがDBに登録済みか確認
-        place_id = batting_center["place_id"]
-        registered_batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == place_id).first()
+        registered_batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == response["place_id"]).first()
 
         # 初めて取得したバッティングセンターはDBに登録
         if registered_batting_center is None:
-            new_batting_center = BattingCenter(place_id = place_id)
+            new_batting_center = BattingCenter(place_id = response["place_id"])
             session.add(new_batting_center)
             session.commit()
+            session.refresh(new_batting_center)
 
-            # 行った！フラグをfalseに設定
-            batting_center["itta"] = "no"
+            # id、行った！フラグ、行った数をレスポンスに設定
+            batting_center.id = new_batting_center.id
+            batting_center.itta = new_batting_center.set_itta_flag(registered_user)
+            batting_center.itta_count = new_batting_center.count_itta()
         else:
-            if registered_batting_center in registered_user.itta_centers:
+            batting_center.id = registered_batting_center.id
+            batting_center.itta = registered_batting_center.set_itta_flag(registered_user)
+            batting_center.itta_count = registered_batting_center.count_itta()
 
-                # 行った！フラグをtrueに設定
-                batting_center["itta"] = "yes"
-            else:
-                batting_center["itta"] = "no"
+        # batting_centersリストにバッティングセンター情報を格納
+        batting_centers.append(batting_center)
 
-    return filtered_responses
+    return batting_centers
 
 # DBにあるバッティングセンターをすべて取得
 @router.get("/batting_centers/")

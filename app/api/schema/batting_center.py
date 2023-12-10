@@ -9,6 +9,9 @@ class BattingCenterGetSchema(BaseModel):
 
 class BattingCenterResponseSchema(BaseModel):
     id: int
-    name: str
     place_id: str
-    machine_informations: List[MachineInformationResponseSchema]
+    name: str
+    formatted_address: str
+    photos: Optional[List]
+    itta_count: int
+    itta: str # 行った！フラグ

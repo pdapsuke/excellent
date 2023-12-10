@@ -55,6 +55,15 @@ class BattingCenter(Base):
     # usersテーブルとの多対多のリレーション
     itta_users = relationship("User", secondary="itta_users_centers", back_populates="itta_centers")
 
+    def set_itta_flag(self, user: User) -> str:
+        if self in user.itta_centers:
+            return "yes"
+        else:
+            return "no"
+
+    def count_itta(self) -> int:
+        return len(self.itta_users)
+
 
 class IttaUsersCenters(Base):
     """usersとbatting_centersの中間テーブル"""
