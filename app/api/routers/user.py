@@ -12,6 +12,7 @@ from schema.user import (
     UpdateAttaNakattaSchema,
 )
 from auth import get_current_user
+from utils import logger
 
 router = APIRouter()
 
@@ -31,6 +32,7 @@ def signin_user(
         )
         session.add(user)
         session.commit()
+        logger.info(f"new user created id: {user.id}, email: {user.email}")
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "user created."})
 
     return JSONResponse(status_code=200, content={"message": "user already exists."})

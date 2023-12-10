@@ -14,11 +14,11 @@ from models import IttaUsersCenters, BattingCenter, User, MachineInformation, At
 from session import get_session
 from auth import get_current_user
 from env import Environment
+from utils import logger
 
 
 router = APIRouter()
 env = Environment()
-
 
 # バッティングセンター検索API
 @router.post("/batting_centers/", response_model=List[BattingCenterResponseSchema])
@@ -64,6 +64,7 @@ def get_batting_centers(
             session.add(new_batting_center)
             session.commit()
             session.refresh(new_batting_center)
+            logger.info(f"new batting_center created id: {new_batting_center.id}, place_id: {new_batting_center.place_id}")
 
             # id、行った！フラグ、行った数をレスポンスに設定
             batting_center.id = new_batting_center.id
