@@ -9,6 +9,7 @@ from fastapi_cloudauth.cognito import CognitoClaims
 from schema.batting_center import (
     BattingCenterGetSchema,
     BattingCenterResponseSchema,
+    BattingCenterIttaUpdateSchema,
 )
 from models import IttaUsersCenters, BattingCenter, User, MachineInformation, AttaUserMachine, NakattaUserMachine
 from session import get_session
@@ -79,6 +80,48 @@ def get_batting_centers(
         batting_centers.append(batting_center)
 
     return batting_centers
+
+# バッティングセンターに行った！したユーザーの更新
+@router.put("/batting_centers/{id}/itta_users", response_model=BattingCenterIttaUpdateSchema)
+def update_itta_users(
+    id: int,
+    append_user: str,
+    current_user: CognitoClaims = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    # DBに登録済みのユーザーを取得、見つからなければ400エラー
+    registered_user = session.query(User).filter(User.email == current_user.email).first()
+    if registered_user is None:
+        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+
+    # 更新対象のバッティングセンターに行った！したユーザーを取得
+    target_batting_center = session.query(BattingCenter).filter(BattingCenter.id == id).first()
+    target_itta_users = target_batting_center.itta_users
+
+    # フラグの値に応じてバッティングセンターに行った！したユーザーのリストを更新
+    if append_user == "yes":
+        if registered_user in target_itta_users:
+            raise HTTPException(status_code=400, detail=f"{current_user.username} already registered itta! (batting_center_id: {target_batting_center.id})")
+        else:
+            target_itta_users.append(registered_user)
+    elif append_user == "no":
+        if registered_user in target_itta_users:
+            target_itta_users.remove(registered_user)
+        else:
+            raise HTTPException(status_code=400, detail=f"{current_user.username} already deregistered itta! (batting_center_id: {target_batting_center.id})")
+    else:
+        raise HTTPException(status_code=400, detail="bad request")
+
+    # 変更をDBにコミット
+    target_batting_center.itta_users = target_itta_users
+    session.add(target_batting_center)
+    session.commit()
+
+    return BattingCenterIttaUpdateSchema(
+        id = target_batting_center.id,
+        itta_count = target_batting_center.count_itta(),
+        itta = target_batting_center.set_itta_flag(registered_user)
+    )
 
 # DBにあるバッティングセンターをすべて取得
 @router.get("/batting_centers/")

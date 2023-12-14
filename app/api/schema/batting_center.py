@@ -15,3 +15,8 @@ class BattingCenterResponseSchema(BaseModel):
     photos: Optional[List]
     itta_count: int
     itta: str # 行った！フラグ
+
+class BattingCenterIttaUpdateSchema(BaseModel):
+    id: int
+    itta_count: int
+    itta: str # 行った！フラグ
