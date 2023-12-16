@@ -234,6 +234,29 @@ def create_machine_information(
 
     return JSONResponse(status_code=200, content={"message": "machine information updated"})
 
+# マシン情報の削除
+@router.delete("/batting_centers/{batting_center_id}/machine_informations/{machine_information_id}")
+def create_machine_information(
+    batting_center_id: int,
+    machine_information_id: int,
+    session: Session = Depends(get_session),
+    current_user: CognitoClaims = Depends(get_current_user),
+):
+    # 更新実行ユーザーと更新対象のマシン情報を取得
+    updater = session.query(User).filter(User.email == current_user.email).first()
+    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+
+    # 更新者がマシン情報の投稿者でなければ、エラーを返す
+    if updater != target_machine_information.user:
+        raise HTTPException(status_code=400, detail="This information is created by other user.")
+
+    # 削除を実行
+    session.delete(target_machine_information)
+    session.commit()
+    logger.info(f"machine_information deleted (id: {target_machine_information.id})")
+
+    return JSONResponse(status_code=200, content={"message": "machine information deleted"})
+
 # DBにあるバッティングセンターをすべて取得
 @router.get("/batting_centers/")
 def get_batting_centers(
