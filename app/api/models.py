@@ -125,7 +125,7 @@ class MachineInformation(Base):
     batting_center = relationship("BattingCenter", back_populates="machine_informations")
 
     # beeaking_ballsテーブルとの多対多のリレーション（中間テーブル：machines_breaking_balls）
-    beeaking_balls = relationship("BreakingBall", secondary="machines_breaking_balls")
+    breaking_balls = relationship("BreakingBall", secondary="machines_breaking_balls")
 
     # ball_speedsテーブルとの多対多のリレーション（中間テーブル：machines_breaking_balls）
     ball_speeds = relationship("BallSpeed", secondary="machines_ball_speeds")
