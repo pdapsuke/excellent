@@ -28,7 +28,16 @@ class MachineInformationResponseSchema(BaseModel):
     id: int
     breaking_balls: List[BreakingBallResponseSchema]
     ball_speeds: List[BallSpeedResponseSchema]
+    atta_count: int
+    atta: str # あった！フラグ
+    nakatta_count: int
+    nakatta: str # なかった！フラグ
     updated: datetime
 
-    class Config:
-        orm_mode = True
+
+class MachineInformationUpdateAttaNakattaResponseSchema(BaseModel):
+    id: int
+    atta_count: int
+    nakatta_count: int
+    atta: str # あった！フラグ
+    nakatta: str # なかった！フラグ

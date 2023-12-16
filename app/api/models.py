@@ -136,6 +136,24 @@ class MachineInformation(Base):
     # usersテーブルとの多対多のリレーション（中間テーブル：nakatta_users_machines）
     nakatta_users = relationship("User", secondary="nakatta_users_machines", back_populates="nakatta_machines")
 
+    def set_atta_flag(self, user: User) -> str:
+        if user in self.atta_users:
+            return "yes"
+        else:
+            return "no"
+
+    def set_nakatta_flag(self, user: User) -> str:
+        if user in self.nakatta_users:
+            return "yes"
+        else:
+            return "no"
+
+    def count_atta(self) -> int:
+        return len(self.atta_users)
+
+
+    def count_nakatta(self) -> int:
+        return len(self.nakatta_users)
 
 class MachineBreakingBall(Base):
     """machine_informationsとbreaking_ballsの中間テーブル"""
