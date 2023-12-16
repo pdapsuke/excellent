@@ -10,7 +10,6 @@ from schema.batting_center import (
 )
 
 from schema.machine import (
-    MachineInformationCreateSchema,
     MachineInformationResponseSchema,
 )
 
@@ -32,31 +31,31 @@ def get_machine_information(
     return machine_informations
 
 
-@router.post("/machine_informations/", response_model=MachineInformationResponseSchema)
-def create_machine_information(
-    data: MachineInformationCreateSchema,
-    session: Session = Depends(get_session),
-):
-    current_user = session.query(User).filter(User.username == data.username).first()
-    target_batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == data.place_id).first()
-    config = {
-        "ballspeed": data.ballspeed,
-        "pitch_type": data.pitch_type,
-        "batter_box": data.batter_box,
-        }
+# @router.post("/machine_informations/", response_model=MachineInformationResponseSchema)
+# def create_machine_information(
+#     data: MachineInformationCreateSchema,
+#     session: Session = Depends(get_session),
+# ):
+#     current_user = session.query(User).filter(User.username == data.username).first()
+#     target_batting_center = session.query(BattingCenter).filter(BattingCenter.place_id == data.place_id).first()
+#     config = {
+#         "ballspeed": data.ballspeed,
+#         "pitch_type": data.pitch_type,
+#         "batter_box": data.batter_box,
+#         }
     
-    machine_information = MachineInformation(
-        config = json.dumps(config, ensure_ascii=False),
-        user = current_user,
-        batting_center = target_batting_center
-    )
-    session.add(machine_information)
-    session.commit()
-    session.refresh(machine_information)
+#     machine_information = MachineInformation(
+#         config = json.dumps(config, ensure_ascii=False),
+#         user = current_user,
+#         batting_center = target_batting_center
+#     )
+#     session.add(machine_information)
+#     session.commit()
+#     session.refresh(machine_information)
 
-    machine_information.config = config
+#     machine_information.config = config
 
-    return machine_information
+#     return machine_information
 
 # machine_idごとの行った数
 @router.get("/machine_informations/{machine_id}/atta_nakatta")

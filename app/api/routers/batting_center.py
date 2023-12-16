@@ -13,7 +13,7 @@ from schema.batting_center import (
     BattingCenterIttaUpdateSchema,
 )
 from schema.machine import (
-    MachineInformationCreateSchema,
+    MachineInformationCreateUpdateSchema,
     MachineInformationResponseSchema,
 )
 from models import (
@@ -141,7 +141,7 @@ def update_itta_users(
 @router.post("/batting_centers/{id}/machine_informations/")
 def create_machine_information(
     id: int,
-    data: MachineInformationCreateSchema,
+    data: MachineInformationCreateUpdateSchema,
     session: Session = Depends(get_session),
     current_user: CognitoClaims = Depends(get_current_user),
 ):
@@ -186,6 +186,53 @@ def get_machine_informations(
 ):
     machine_informations = session.query(MachineInformation).filter(MachineInformation.batting_center_id == id).all()
     return machine_informations
+
+# マシン情報の更新
+@router.put("/batting_centers/{batting_center_id}/machine_informations/{machine_information_id}")
+def create_machine_information(
+    batting_center_id: int,
+    machine_information_id: int,
+    data: MachineInformationCreateUpdateSchema,
+    session: Session = Depends(get_session),
+    current_user: CognitoClaims = Depends(get_current_user),
+):
+    # バッターボックスのリクエストが「左、右、両」以外だった場合はエラー
+    if data.batter_box not in ["左", "右", "両"]:
+        raise HTTPException(status_code=400, detail="bad request")
+
+    # 更新実行ユーザーと更新対象のマシン情報を取得
+    updater = session.query(User).filter(User.email == current_user.email).first()
+    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+
+    # 更新者がマシン情報の投稿者でなければ、エラーを返す
+    if updater != target_machine_information.user:
+        raise HTTPException(status_code=400, detail="This information is created by other user.")
+
+    # 球種に関する情報を取得
+    breaking_balls = []
+    for breaking_ball_id in set(data.breaking_ball_ids):
+        breaking_ball = session.query(BreakingBall).filter(BreakingBall.id == breaking_ball_id).first()
+        if breaking_ball is None:
+            raise HTTPException(status_code=400, detail="breaking_ball is not found.")
+        breaking_balls.append(breaking_ball)
+
+    # 球速に関する情報を取得
+    ball_speeds = []
+    for ballspeed_id in set(data.ballspeed_ids):
+        ball_speed = session.query(BallSpeed).filter(BallSpeed.id == ballspeed_id).first()
+        if ball_speed is None:
+            raise HTTPException(status_code=400, detail="ball_speed is not found.")
+        ball_speeds.append(ball_speed)
+
+    # 更新後のデータをコミット
+    target_machine_information.batter_box = data.batter_box
+    target_machine_information.breaking_balls = breaking_balls
+    target_machine_information.ball_speeds = ball_speeds
+    session.add(target_machine_information)
+    session.commit()
+    logger.info(f"machine_information updated (id: {target_machine_information.id})")
+
+    return JSONResponse(status_code=200, content={"message": "machine information updated"})
 
 # DBにあるバッティングセンターをすべて取得
 @router.get("/batting_centers/")

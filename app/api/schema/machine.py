@@ -18,7 +18,7 @@ class BallSpeedResponseSchema(BaseModel):
         orm_mode = True
 
 
-class MachineInformationCreateSchema(BaseModel):
+class MachineInformationCreateUpdateSchema(BaseModel):
     ballspeed_ids: List[int]
     breaking_ball_ids: List[int]
     batter_box: str
