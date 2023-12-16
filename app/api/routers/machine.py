@@ -12,7 +12,6 @@ from schema.batting_center import (
 from schema.machine import (
     MachineInformationCreateSchema,
     MachineInformationResponseSchema,
-    MachineInformationConfigSchema
 )
 
 

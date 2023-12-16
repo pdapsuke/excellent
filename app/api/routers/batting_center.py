@@ -4,6 +4,7 @@ from typing import List, Optional
 import requests
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Response, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi_cloudauth.cognito import CognitoClaims
 
 from schema.batting_center import (
@@ -11,7 +12,20 @@ from schema.batting_center import (
     BattingCenterResponseSchema,
     BattingCenterIttaUpdateSchema,
 )
-from models import IttaUsersCenters, BattingCenter, User, MachineInformation, AttaUserMachine, NakattaUserMachine
+from schema.machine import (
+    MachineInformationCreateSchema,
+    MachineInformationResponseSchema,
+)
+from models import (
+    IttaUsersCenters,
+    BattingCenter,
+    User,
+    MachineInformation,
+    AttaUserMachine,
+    NakattaUserMachine,
+    BreakingBall,
+    BallSpeed,
+)
 from session import get_session
 from auth import get_current_user
 from env import Environment
@@ -122,6 +136,56 @@ def update_itta_users(
         itta_count = target_batting_center.count_itta(),
         itta = target_batting_center.set_itta_flag(registered_user)
     )
+
+# マシン情報の作成
+@router.post("/batting_centers/{id}/machine_informations/")
+def create_machine_information(
+    id: int,
+    data: MachineInformationCreateSchema,
+    session: Session = Depends(get_session),
+    current_user: CognitoClaims = Depends(get_current_user),
+):
+    # バッターボックスのリクエストが「左、右、両」以外だった場合はエラー
+    if data.batter_box not in ["左", "右", "両"]:
+        raise HTTPException(status_code=400, detail="bad request")
+
+    # 投稿者と更新対象のバッティングセンターを取得
+    contributor = session.query(User).filter(User.email == current_user.email).first()
+    target_batting_center = session.query(BattingCenter).filter(BattingCenter.id == id).first()
+
+    # 球種に関する情報を取得
+    breaking_balls = []
+    for breaking_ball_id in set(data.breaking_ball_ids):
+        breaking_ball = session.query(BreakingBall).filter(BreakingBall.id == breaking_ball_id).first()
+        breaking_balls.append(breaking_ball)
+
+    # 球速に関する情報を取得
+    ball_speeds = []
+    for ballspeed_id in set(data.ballspeed_ids):
+        ball_speed = session.query(BallSpeed).filter(BallSpeed.id == ballspeed_id).first()
+        ball_speeds.append(ball_speed)
+
+    machine_information = MachineInformation(
+        user_id = contributor.id,
+        batting_center_id = target_batting_center.id,
+        batter_box = data.batter_box,
+        breaking_balls = breaking_balls,
+        ball_speeds = ball_speeds,
+    )
+    session.add(machine_information)
+    session.commit()
+    logger.info("machine information created")
+
+    return JSONResponse(status_code=200, content={"message": "machine information created"})
+
+# バッティングセンターごとのマシン情報の一覧取得
+@router.get("/batting_centers/{id}/machine_informations/", response_model=List[MachineInformationResponseSchema])
+def get_machine_informations(
+    id: int,
+    session: Session = Depends(get_session),
+):
+    machine_informations = session.query(MachineInformation).filter(MachineInformation.batting_center_id == id).all()
+    return machine_informations
 
 # DBにあるバッティングセンターをすべて取得
 @router.get("/batting_centers/")
