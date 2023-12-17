@@ -256,7 +256,7 @@ def get_machine_informations(
 
 # マシン情報の更新
 @router.put("/batting_centers/{batting_center_id}/machine_informations/{machine_information_id}")
-def create_machine_information(
+def update_machine_information(
     batting_center_id: int,
     machine_information_id: int,
     data: MachineInformationCreateUpdateSchema,
@@ -303,7 +303,7 @@ def create_machine_information(
 
 # マシン情報の削除
 @router.delete("/batting_centers/{batting_center_id}/machine_informations/{machine_information_id}")
-def create_machine_information(
+def delete_machine_information(
     batting_center_id: int,
     machine_information_id: int,
     session: Session = Depends(get_session),
