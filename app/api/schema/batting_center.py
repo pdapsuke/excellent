@@ -16,6 +16,16 @@ class BattingCenterResponseSchema(BaseModel):
     itta_count: int
     itta: str # 行った！フラグ
 
+class BattingCenterDetailResponseSchema(BaseModel):
+    id: int
+    place_id: str
+    name: str
+    formatted_address: str
+    photos: Optional[List]
+    itta_count: int
+    itta: str # 行った！フラグ
+    machine_informations: List[MachineInformationResponseSchema]
+
 class BattingCenterIttaUpdateSchema(BaseModel):
     id: int
     itta_count: int

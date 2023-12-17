@@ -10,12 +10,15 @@ from fastapi_cloudauth.cognito import CognitoClaims
 from schema.batting_center import (
     BattingCenterGetSchema,
     BattingCenterResponseSchema,
+    BattingCenterDetailResponseSchema,
     BattingCenterIttaUpdateSchema,
 )
 from schema.machine import (
     MachineInformationCreateUpdateSchema,
     MachineInformationResponseSchema,
     MachineInformationUpdateAttaNakattaResponseSchema,
+    BreakingBallResponseSchema,
+    BallSpeedResponseSchema,
 )
 from models import (
     IttaUsersCenters,
@@ -95,6 +98,55 @@ def get_batting_centers(
         batting_centers.append(batting_center)
 
     return batting_centers
+
+# バッティングセンターごとの詳細取得
+@router.get("/batting_centers/{id}", response_model=BattingCenterDetailResponseSchema)
+def get_batting_center_detail(
+    id: int,
+    session: Session = Depends(get_session),
+    user: CognitoClaims = Depends(get_current_user),
+):
+    current_user = session.query(User).filter(User.email == user.email).first()
+    if current_user is None:
+        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+
+    # 対象のバッティングセンターと関連するマシン情報を取得
+    target_batting_center = session.query(BattingCenter).filter(BattingCenter.id == id).first()
+    machine_informations = session.query(MachineInformation).filter(MachineInformation.batting_center_id == id).all()
+
+    # Google PlaceDetails APIへリクエスト
+    payload = {"place_id": target_batting_center.place_id, "language": "ja", "fiels": "Basic", "key": env.find_place_api_key}
+    response = requests.get(env.place_details_url, params=payload).json()["result"]
+
+    # マシン情報のレスポンスを格納するリストを定義
+    machine_information_responses: List[MachineInformationResponseSchema] = []
+
+    # マシン情報のレスポンスに必要な情報を設定し、オブジェクトをレスポンス用リストに追加
+    for machine_information in machine_informations:
+        breaking_ball_responses = [BreakingBallResponseSchema(id = bb.id, name = bb.name) for bb in machine_information.breaking_balls]
+        ball_speed_responses = [BallSpeedResponseSchema(id = bs.id, speed = bs.speed) for bs in machine_information.ball_speeds]
+
+        machine_information_responses.append(MachineInformationResponseSchema(
+            id = machine_information.id,
+            breaking_balls = breaking_ball_responses,
+            ball_speeds = ball_speed_responses,
+            atta_count = machine_information.count_atta(),
+            nakatta_count = machine_information.count_nakatta(),
+            atta = machine_information.set_atta_flag(current_user),
+            nakatta = machine_information.set_nakatta_flag(current_user),
+            updated = machine_information.updated
+        ))
+
+    return BattingCenterDetailResponseSchema(
+        id = id,
+        place_id = target_batting_center.place_id,
+        name = response["name"],
+        formatted_address = response["formatted_address"].split("、", 1)[-1], # "日本、"という文字列が先頭につくため加工する
+        photos = response["photos"] if "photos" in response else None,
+        itta_count = target_batting_center.count_itta(),
+        itta = target_batting_center.set_itta_flag(current_user),
+        machine_informations = machine_information_responses
+    )
 
 # バッティングセンターに行った！したユーザーの更新
 @router.put("/batting_centers/{id}/itta_users", response_model=BattingCenterIttaUpdateSchema)
