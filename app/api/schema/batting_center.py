@@ -26,6 +26,14 @@ class BattingCenterDetailResponseSchema(BaseModel):
     itta: str # 行った！フラグ
     machine_informations: List[MachineInformationResponseSchema]
 
+# 投稿、あった！、なかった！したマシン情報を返す
+class BattingCenterMypageResponseSchema(BaseModel):
+    id: int
+    place_id: str
+    name: str
+    formatted_address: str
+    machine_informations: List[MachineInformationResponseSchema]
+
 class BattingCenterIttaUpdateSchema(BaseModel):
     id: int
     itta_count: int
