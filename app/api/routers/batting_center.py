@@ -128,6 +128,7 @@ def get_batting_center_detail(
 
         machine_information_responses.append(MachineInformationResponseSchema(
             id = machine_information.id,
+            user_id = machine_information.user_id,
             breaking_balls = breaking_ball_responses,
             ball_speeds = ball_speed_responses,
             atta_count = machine_information.count_atta(),

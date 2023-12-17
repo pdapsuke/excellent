@@ -26,6 +26,7 @@ class MachineInformationCreateUpdateSchema(BaseModel):
 
 class MachineInformationResponseSchema(BaseModel):
     id: int
+    user_id: int
     breaking_balls: List[BreakingBallResponseSchema]
     ball_speeds: List[BallSpeedResponseSchema]
     atta_count: int
