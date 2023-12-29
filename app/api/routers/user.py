@@ -20,6 +20,7 @@ from schema.machine import (
 from auth import get_current_user
 from env import Environment
 from utils import logger
+from crud import user as crud_user
 
 router = APIRouter()
 env = Environment()
@@ -27,16 +28,16 @@ env = Environment()
 @router.post("/users/signin")
 def signin_user(
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user)
+    user: CognitoClaims = Depends(get_current_user)
 ):
-    # current_userがDBに登録済みか、メールアドレスで検索
-    registared_user = session.query(User).filter(User.email == current_user.email).first()
+    # userがDBに登録済みか、メールアドレスで検索
+    current_user = session.query(User).filter(User.email == user.email).first()
 
-    # current_userがDBに未登録の場合、新規登録
-    if registared_user is None:
+    # userがDBに未登録の場合、新規登録
+    if current_user is None:
         user = User(
-            username = current_user.username,
-            email = current_user.email,
+            username = user.username,
+            email = user.email,
         )
         session.add(user)
         session.commit()
@@ -51,10 +52,7 @@ def get_itta_centers(
     session: Session = Depends(get_session),
     user: CognitoClaims = Depends(get_current_user)
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    current_user = session.query(User).filter(User.email == user.email).first()
-    if current_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
 
     itta_batting_centers = current_user.itta_centers # 行った！済みのバッティングセンターを取得
     result_list: List[BattingCenterResponseSchema] = [] # バッティングセンターのレスポンスを格納するリストを定義
@@ -83,10 +81,7 @@ def get_posted_machine_informations(
     session: Session = Depends(get_session),
     user: CognitoClaims = Depends(get_current_user)
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    current_user = session.query(User).filter(User.email == user.email).first()
-    if current_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
 
     posted_machine_informations = current_user.machine_informations # 投稿したマシン情報を取得
     result_list: List[BattingCenterMypageResponseSchema] = [] # レスポンス（投稿したマシン情報と紐づくバッティングセンター）を格納するリスト
@@ -136,10 +131,7 @@ def get_nakatta_machine_informations(
     session: Session = Depends(get_session),
     user: CognitoClaims = Depends(get_current_user)
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    current_user = session.query(User).filter(User.email == user.email).first()
-    if current_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
 
     nakatta_machine_informations = current_user.nakatta_machines # あった！したマシン情報を取得
     result_list: List[BattingCenterMypageResponseSchema] = [] # レスポンス（あった！したマシン情報と紐づくバッティングセンター）を格納するリスト
@@ -189,10 +181,7 @@ def get_atta_machine_informations(
     session: Session = Depends(get_session),
     user: CognitoClaims = Depends(get_current_user)
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    current_user = session.query(User).filter(User.email == user.email).first()
-    if current_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
 
     atta_machine_informations = current_user.atta_machines # あった！したマシン情報を取得
     result_list: List[BattingCenterMypageResponseSchema] = [] # レスポンス（あった！したマシン情報と紐づくバッティングセンター）を格納するリスト

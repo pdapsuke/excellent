@@ -29,6 +29,11 @@ from session import get_session
 from auth import get_current_user
 from env import Environment
 from utils import logger
+from crud import (
+    user as crud_user,
+    batting_center as crud_batting_center,
+    machine as crud_machine,
+)
 
 
 router = APIRouter()
@@ -38,16 +43,12 @@ env = Environment()
 @router.post("/batting_centers/", response_model=List[BattingCenterResponseSchema])
 def get_batting_centers(
     prefecture_city: str,
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     # レスポンスで返すバッティングセンター情報を格納するリスト
     batting_centers = []
-
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    registered_user = session.query(User).filter(User.email == current_user.email).first()
-    if registered_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
 
     # Google FindPlace APIへリクエスト
     payload = {"query": f"{prefecture_city} バッティングセンター","language": "ja", "key": env.find_place_api_key}
@@ -82,11 +83,11 @@ def get_batting_centers(
 
             # id、行った！フラグ、行った数をレスポンスに設定
             batting_center.id = new_batting_center.id
-            batting_center.itta = new_batting_center.set_itta_flag(registered_user)
+            batting_center.itta = new_batting_center.set_itta_flag(current_user)
             batting_center.itta_count = new_batting_center.count_itta()
         else:
             batting_center.id = registered_batting_center.id
-            batting_center.itta = registered_batting_center.set_itta_flag(registered_user)
+            batting_center.itta = registered_batting_center.set_itta_flag(current_user)
             batting_center.itta_count = registered_batting_center.count_itta()
 
         # batting_centersリストにバッティングセンター情報を格納
@@ -101,13 +102,9 @@ def get_batting_center_detail(
     session: Session = Depends(get_session),
     user: CognitoClaims = Depends(get_current_user),
 ):
-    current_user = session.query(User).filter(User.email == user.email).first()
-    if current_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
-
-    # 対象のバッティングセンターと関連するマシン情報を取得
-    target_batting_center = session.query(BattingCenter).filter(BattingCenter.id == id).first()
-    machine_informations = session.query(MachineInformation).filter(MachineInformation.batting_center_id == id).all()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_batting_center = crud_batting_center.get_batting_center_by_id(session=session, id=id)
+    machine_informations = crud_machine.get_machine_informations_by_batting_center_id(session=session, batting_center_id=id)
 
     # Google PlaceDetails APIへリクエスト
     payload = {"place_id": target_batting_center.place_id, "language": "ja", "fiels": "Basic", "key": env.find_place_api_key}
@@ -149,27 +146,22 @@ def get_batting_center_detail(
 def update_itta_users(
     id: int,
     append_user: str,
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    registered_user = session.query(User).filter(User.email == current_user.email).first()
-    if registered_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
-
-    # 更新対象のバッティングセンターに行った！したユーザーを取得
-    target_batting_center = session.query(BattingCenter).filter(BattingCenter.id == id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_batting_center = crud_batting_center.get_batting_center_by_id(session=session, id=id)
     target_itta_users = target_batting_center.itta_users
 
     # フラグの値に応じてバッティングセンターに行った！したユーザーのリストを更新
     if append_user == "yes":
-        if registered_user in target_itta_users:
+        if current_user in target_itta_users:
             raise HTTPException(status_code=400, detail=f"{current_user.username} already registered itta! (batting_center_id: {target_batting_center.id})")
         else:
-            target_itta_users.append(registered_user)
+            target_itta_users.append(current_user)
     elif append_user == "no":
-        if registered_user in target_itta_users:
-            target_itta_users.remove(registered_user)
+        if current_user in target_itta_users:
+            target_itta_users.remove(current_user)
         else:
             raise HTTPException(status_code=400, detail=f"{current_user.username} already deregistered itta! (batting_center_id: {target_batting_center.id})")
     else:
@@ -183,7 +175,7 @@ def update_itta_users(
     return BattingCenterIttaUpdateSchema(
         id = target_batting_center.id,
         itta_count = target_batting_center.count_itta(),
-        itta = target_batting_center.set_itta_flag(registered_user)
+        itta = target_batting_center.set_itta_flag(current_user)
     )
 
 # マシン情報の作成
@@ -192,15 +184,14 @@ def create_machine_information(
     id: int,
     data: MachineInformationCreateUpdateSchema,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
     # バッターボックスのリクエストが「左、右、両」以外だった場合はエラー
     if data.batter_box not in ["左", "右", "両"]:
         raise HTTPException(status_code=400, detail="bad request")
 
-    # 投稿者と更新対象のバッティングセンターを取得
-    contributor = session.query(User).filter(User.email == current_user.email).first()
-    target_batting_center = session.query(BattingCenter).filter(BattingCenter.id == id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_batting_center = crud_batting_center.get_batting_center_by_id(session=session, id=id)
 
     # 球種に関する情報を取得
     breaking_balls = []
@@ -215,7 +206,7 @@ def create_machine_information(
         ball_speeds.append(ball_speed)
 
     machine_information = MachineInformation(
-        user_id = contributor.id,
+        user_id = current_user.id,
         batting_center_id = target_batting_center.id,
         batter_box = data.batter_box,
         breaking_balls = breaking_balls,
@@ -232,21 +223,17 @@ def create_machine_information(
 def get_machine_informations(
     id: int,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    registered_user = session.query(User).filter(User.email == current_user.email).first()
-    if registered_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
-
-    machine_informations = session.query(MachineInformation).filter(MachineInformation.batting_center_id == id).all()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    machine_informations = crud_machine.get_machine_informations_by_batting_center_id(session=session, batting_center_id=id)
 
     # マシン情報にあった！なかった！の数とフラグをセット
     for machine_information in machine_informations:
         machine_information.atta_count = machine_information.count_atta()
         machine_information.nakatta_count = machine_information.count_nakatta()
-        machine_information.atta = machine_information.set_atta_flag(registered_user)
-        machine_information.nakatta = machine_information.set_nakatta_flag(registered_user)
+        machine_information.atta = machine_information.set_atta_flag(current_user)
+        machine_information.nakatta = machine_information.set_nakatta_flag(current_user)
 
     return machine_informations
 
@@ -257,18 +244,17 @@ def update_machine_information(
     machine_information_id: int,
     data: MachineInformationCreateUpdateSchema,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
     # バッターボックスのリクエストが「左、右、両」以外だった場合はエラー
     if data.batter_box not in ["左", "右", "両"]:
         raise HTTPException(status_code=400, detail="bad request")
 
-    # 更新実行ユーザーと更新対象のマシン情報を取得
-    updater = session.query(User).filter(User.email == current_user.email).first()
-    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_machine_information = crud_machine.get_machine_information_by_id(session=session, id=machine_information_id)
 
-    # 更新者がマシン情報の投稿者でなければ、エラーを返す
-    if updater != target_machine_information.user:
+    # 現在のユーザーがマシン情報の投稿者でなければ、エラーを返す
+    if current_user != target_machine_information.user:
         raise HTTPException(status_code=400, detail="This information is created by other user.")
 
     # 球種に関する情報を取得
@@ -303,14 +289,13 @@ def delete_machine_information(
     batting_center_id: int,
     machine_information_id: int,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
-    # 更新実行ユーザーと更新対象のマシン情報を取得
-    updater = session.query(User).filter(User.email == current_user.email).first()
-    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_machine_information = crud_machine.get_machine_information_by_id(session=session, id=machine_information_id)
 
-    # 更新者がマシン情報の投稿者でなければ、エラーを返す
-    if updater != target_machine_information.user:
+    # 現在のユーザーがマシン情報の投稿者でなければ、エラーを返す
+    if current_user != target_machine_information.user:
         raise HTTPException(status_code=400, detail="This information is created by other user.")
 
     # 削除を実行
@@ -326,28 +311,23 @@ def add_atta_users(
     batting_center_id: int,
     machine_information_id: int,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    registered_user = session.query(User).filter(User.email == current_user.email).first()
-    if registered_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
-
-    # 更新対象のマシン情報にあった！したユーザーを取得
-    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_machine_information = crud_machine.get_machine_information_by_id(session=session, id=machine_information_id)
     target_atta_users = target_machine_information.atta_users
     target_nakatta_users = target_machine_information.nakatta_users
 
     # すでにあった！済みならばエラーを返す
-    if registered_user in target_atta_users:
+    if current_user in target_atta_users:
         raise HTTPException(status_code=400, detail=f"{current_user.username} already registered atta! (machine_information_id: {target_machine_information.id})")
 
     # なかった！済みだった場合は、なかった！を解除
-    if registered_user in target_nakatta_users:
-        target_nakatta_users.remove(registered_user)
+    if current_user in target_nakatta_users:
+        target_nakatta_users.remove(current_user)
 
     # あった！したユーザーに現在のユーザーを追加
-    target_atta_users.append(registered_user)
+    target_atta_users.append(current_user)
 
     # 変更をDBにコミット
     target_machine_information.atta_users = target_atta_users
@@ -359,8 +339,8 @@ def add_atta_users(
         id = target_machine_information.id,
         atta_count = target_machine_information.count_atta(),
         nakatta_count = target_machine_information.count_nakatta(),
-        atta = target_machine_information.set_atta_flag(registered_user),
-        nakatta = target_machine_information.set_nakatta_flag(registered_user),
+        atta = target_machine_information.set_atta_flag(current_user),
+        nakatta = target_machine_information.set_nakatta_flag(current_user),
     )
 
 # マシン情報にあった！したユーザーの削除
@@ -369,23 +349,18 @@ def remove_atta_users(
     batting_center_id: int,
     machine_information_id: int,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    registered_user = session.query(User).filter(User.email == current_user.email).first()
-    if registered_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
-
-    # 更新対象のマシン情報にあった！したユーザーを取得
-    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_machine_information = crud_machine.get_machine_information_by_id(session=session, id=machine_information_id)
     target_atta_users = target_machine_information.atta_users
 
     # すでにあった！解除済みならばエラーを返す
-    if registered_user not in target_atta_users:
+    if current_user not in target_atta_users:
         raise HTTPException(status_code=400, detail=f"{current_user.username} already deregistered atta! (machine_information_id: {target_machine_information.id})")
 
     # 対象ユーザーをあった！したユーザーリストから除き、変更をDBにコミット 
-    target_atta_users.remove(registered_user)
+    target_atta_users.remove(current_user)
     target_machine_information.atta_users = target_atta_users
     session.add(target_machine_information)
     session.commit()
@@ -394,8 +369,8 @@ def remove_atta_users(
         id = target_machine_information.id,
         atta_count = target_machine_information.count_atta(),
         nakatta_count = target_machine_information.count_nakatta(),
-        atta = target_machine_information.set_atta_flag(registered_user),
-        nakatta = target_machine_information.set_nakatta_flag(registered_user),
+        atta = target_machine_information.set_atta_flag(current_user),
+        nakatta = target_machine_information.set_nakatta_flag(current_user),
     )
 
 # マシン情報になかった！したユーザーの追加
@@ -404,28 +379,23 @@ def add_nakatta_users(
     batting_center_id: int,
     machine_information_id: int,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    registered_user = session.query(User).filter(User.email == current_user.email).first()
-    if registered_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
-
-    # 更新対象のマシン情報になかった！したユーザーを取得
-    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_machine_information = crud_machine.get_machine_information_by_id(session=session, id=machine_information_id)
     target_nakatta_users = target_machine_information.nakatta_users
     target_atta_users = target_machine_information.atta_users
 
     # すでになかった！済みならばエラーを返す
-    if registered_user in target_nakatta_users:
+    if current_user in target_nakatta_users:
         raise HTTPException(status_code=400, detail=f"{current_user.username} already registered nakatta! (machine_information_id: {target_machine_information.id})")
 
     # あった！済みだった場合は、あった！を解除
-    if registered_user in target_atta_users:
-        target_atta_users.remove(registered_user)
+    if current_user in target_atta_users:
+        target_atta_users.remove(current_user)
 
     # なかった！したユーザーに現在のユーザーを追加
-    target_nakatta_users.append(registered_user)
+    target_nakatta_users.append(current_user)
 
     # 変更をDBにコミット
     target_machine_information.atta_users = target_atta_users
@@ -437,8 +407,8 @@ def add_nakatta_users(
         id = target_machine_information.id,
         atta_count = target_machine_information.count_atta(),
         nakatta_count = target_machine_information.count_nakatta(),
-        atta = target_machine_information.set_atta_flag(registered_user),
-        nakatta = target_machine_information.set_nakatta_flag(registered_user),
+        atta = target_machine_information.set_atta_flag(current_user),
+        nakatta = target_machine_information.set_nakatta_flag(current_user),
     )
 
 # マシン情報になかった！したユーザーの削除
@@ -447,23 +417,18 @@ def remove_nakatta_users(
     batting_center_id: int,
     machine_information_id: int,
     session: Session = Depends(get_session),
-    current_user: CognitoClaims = Depends(get_current_user),
+    user: CognitoClaims = Depends(get_current_user),
 ):
-    # DBに登録済みのユーザーを取得、見つからなければ400エラー
-    registered_user = session.query(User).filter(User.email == current_user.email).first()
-    if registered_user is None:
-        raise HTTPException(status_code=400, detail=f"{current_user.username} not exists.")
-
-    # 更新対象のマシン情報になかった！したユーザーを取得
-    target_machine_information = session.query(MachineInformation).filter(MachineInformation.id == machine_information_id).first()
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_machine_information = crud_machine.get_machine_information_by_id(session=session, id=machine_information_id)
     target_nakatta_users = target_machine_information.nakatta_users
 
     # すでになかった！解除済みならばエラーを返す
-    if registered_user not in target_nakatta_users:
+    if current_user not in target_nakatta_users:
         raise HTTPException(status_code=400, detail=f"{current_user.username} already deregistered nakatta!(machine_information_id: {target_machine_information.id})")
 
     # 対象ユーザーをなかった！したユーザーリストから除き、変更をDBにコミット
-    target_nakatta_users.remove(registered_user)
+    target_nakatta_users.remove(current_user)
     target_machine_information.nakatta_users = target_nakatta_users
     session.add(target_machine_information)
     session.commit()
@@ -472,6 +437,6 @@ def remove_nakatta_users(
         id = target_machine_information.id,
         atta_count = target_machine_information.count_atta(),
         nakatta_count = target_machine_information.count_nakatta(),
-        atta = target_machine_information.set_atta_flag(registered_user),
-        nakatta = target_machine_information.set_nakatta_flag(registered_user),
+        atta = target_machine_information.set_atta_flag(current_user),
+        nakatta = target_machine_information.set_nakatta_flag(current_user),
     )
