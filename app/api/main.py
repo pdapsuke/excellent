@@ -3,7 +3,6 @@ from api.routers import (
     prefecture_city,
     batting_center,
     user,
-    machine
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,8 +11,6 @@ app = FastAPI()
 app.include_router(prefecture_city.router, prefix="/api/v1")
 app.include_router(batting_center.router, prefix="/api/v1")
 app.include_router(user.router, prefix="/api/v1")
-app.include_router(machine.router, prefix="/api/v1")
-
 
 origins = ["*"]
 
