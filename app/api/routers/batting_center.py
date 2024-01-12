@@ -141,31 +141,52 @@ def get_batting_center_detail(
         machine_informations = machine_information_responses
     )
 
-# バッティングセンターに行った！したユーザーの更新
-@router.put("/batting_centers/{id}/itta_users", response_model=BattingCenterIttaUpdateSchema)
-def update_itta_users(
-    id: int,
-    append_user: str,
-    user: CognitoClaims = Depends(get_current_user),
+# バッティングセンターに行った！したユーザーの追加
+@router.post("/batting_centers/{batting_center_id}/", response_model=BattingCenterIttaUpdateSchema)
+def add_itta_users(
+    batting_center_id: int,
     session: Session = Depends(get_session),
+    user: CognitoClaims = Depends(get_current_user),
 ):
     current_user = crud_user.get_user_by_email(session=session, email=user.email)
-    target_batting_center = crud_batting_center.get_batting_center_by_id(session=session, id=id)
+    target_batting_center = crud_batting_center.get_batting_center_by_id(session=session, id=batting_center_id)
     target_itta_users = target_batting_center.itta_users
 
-    # フラグの値に応じてバッティングセンターに行った！したユーザーのリストを更新
-    if append_user == "yes":
-        if current_user in target_itta_users:
-            raise HTTPException(status_code=400, detail=f"{current_user.username} already registered itta! (batting_center_id: {target_batting_center.id})")
-        else:
-            target_itta_users.append(current_user)
-    elif append_user == "no":
-        if current_user in target_itta_users:
-            target_itta_users.remove(current_user)
-        else:
-            raise HTTPException(status_code=400, detail=f"{current_user.username} already deregistered itta! (batting_center_id: {target_batting_center.id})")
-    else:
-        raise HTTPException(status_code=400, detail="bad request")
+    # すでに行った！済みならばエラーを返す
+    if current_user in target_itta_users:
+        raise HTTPException(status_code=400, detail=f"{current_user.username} already registered itta! (batting_center_id: {target_batting_center.id})")
+
+    # 行った！したユーザーに現在のユーザーを追加
+    target_itta_users.append(current_user)
+
+    # 変更をDBにコミット
+    target_batting_center.itta_users = target_itta_users
+    session.add(target_batting_center)
+    session.commit()
+
+    return BattingCenterIttaUpdateSchema(
+        id = target_batting_center.id,
+        itta_count = target_batting_center.count_itta(),
+        itta = target_batting_center.set_itta_flag(current_user)
+    )
+
+# バッティングセンターに行った！したユーザーの削除
+@router.delete("/batting_centers/{batting_center_id}/", response_model=BattingCenterIttaUpdateSchema)
+def remove_itta_users(
+    batting_center_id: int,
+    session: Session = Depends(get_session),
+    user: CognitoClaims = Depends(get_current_user),
+):
+    current_user = crud_user.get_user_by_email(session=session, email=user.email)
+    target_batting_center = crud_batting_center.get_batting_center_by_id(session=session, id=batting_center_id)
+    target_itta_users = target_batting_center.itta_users
+
+    # もともと行った！していなければエラーを返す
+    if current_user not in target_itta_users:
+        raise HTTPException(status_code=400, detail=f"{current_user.username} already deregistered itta! (batting_center_id: {target_batting_center.id})")
+
+    # 行った！したユーザーから現在のユーザーを削除
+    target_itta_users.remove(current_user)
 
     # 変更をDBにコミット
     target_batting_center.itta_users = target_itta_users
