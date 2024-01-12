@@ -1,19 +1,17 @@
 from typing import List
 
+from fastapi import HTTPException
 import requests
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
-from models import User, MachineInformation, BattingCenter
-from schema.batting_center import (
-    BattingCenterMypageResponseSchema,
-)
+from env import Environment
+from models import MachineInformation, User
+from schema.batting_center import BattingCenterMypageResponseSchema
 from schema.machine import (
     MachineInformationResponseSchema,
     BreakingBallResponseSchema,
     BallSpeedResponseSchema,
 )
-from env import Environment
 
 env = Environment()
 

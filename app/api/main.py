@@ -1,10 +1,11 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from api.routers import (
     prefecture_city,
     batting_center,
     user,
 )
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 

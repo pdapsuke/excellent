@@ -1,26 +1,21 @@
 from typing import List
 
+from fastapi import APIRouter, Depends, status
+from fastapi_cloudauth.cognito import CognitoClaims
+from fastapi.responses import JSONResponse
 import requests
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
-from fastapi_cloudauth.cognito import CognitoClaims
 
-from models import User
-from session import get_session
-from schema.batting_center import (
-    BattingCenterResponseSchema,
-    BattingCenterMypageResponseSchema,
-)
-from schema.machine import (
-    MachineInformationResponseSchema,
-    BreakingBallResponseSchema,
-    BallSpeedResponseSchema,
-)
 from auth import get_current_user
-from env import Environment
-from utils import logger
 from crud import user as crud_user
+from env import Environment
+from models import User
+from schema.batting_center import (
+    BattingCenterMypageResponseSchema,
+    BattingCenterResponseSchema,
+)
+from session import get_session
+from utils import logger
 
 router = APIRouter()
 env = Environment()
