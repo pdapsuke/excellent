@@ -1,24 +1,28 @@
 <template>
   <div>
+    <Alert ref="alert" />
     <div class="mb-3">
       <div class="text-h4">Items</div>
-      <v-select
-        label="prefectures"
-        v-model="pref"
-        :items="prefectures"
-        item-title="prefName"
-        item-value="prefCode"
-        @update:modelValue="fetchCities"
-      >
-      </v-select>
-      <v-select
-        label="cities"
-        :items="cities"
-        item-title="cityName"
-        item-value="cityCode"
-        v-model="city"
-      >
-      </v-select>
+      <v-form ref="searchForm" lazy-validation>
+        <v-select
+          label="prefectures"
+          v-model="pref"
+          :items="prefectures"
+          :rules="[rules.required]"
+          item-title="prefName"
+          item-value="prefCode"
+        >
+        </v-select>
+        <v-select
+          label="cities"
+          :items="cities"
+          :rules="[rules.required]"
+          item-title="cityName"
+          item-value="cityCode"
+          v-model="city"
+        >
+        </v-select>
+      </v-form>
       <v-btn
         color="primary"
         @click="submit"
@@ -64,37 +68,53 @@
 import { ref } from 'vue'
 import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
-const pref = ref<number>(1)
+const pref = ref<number>()
 const city = ref<number>()
+const alert = ref<any>(null)
+const rules = useRules()
+const prefForm = ref<any>(null)
+const cityForm = ref<any>(null)
+const searchForm = ref<any>(null)
 const username = useAuth().getUsername<string>()
+
 let cities = ref<any>()
 let battingcenters = ref<any>()
 
 // 都道府県一覧取得
-const { data: prefectures, pending:a, error:b, refresh: c } = await usePrefectureCityApi().getAllPrefecture()
-const { data: citiesFromAPI, pending: d, error: e, refresh: f } = await usePrefectureCityApi().getCity(1)
-cities = citiesFromAPI
+const { data: prefectures, error: fetchPrefecturesError } = await usePrefectureCityApi().getAllPrefecture()
 
+// 市区町村一覧APIを呼び出す
 async function fetchCities() {
-  // 市区町村一覧APIを呼び出す
-  const { data, pending, error, refresh } = await usePrefectureCityApi().getCity(pref.value)
-  cities = data
+  console.log("fetchCities function called");
+  const { data: citiesResponse, error: fetchCitiesError } = await usePrefectureCityApi().getCity(pref.value)
+
+  // 取得失敗した場合、アラートとログを出力してreturn
+  if (!citiesResponse.value || fetchCitiesError.value) {
+    alert.value.error(fetchCitiesError.value)
+    console.error(fetchCitiesError.value)
+    return
+  }
+  cities.value = citiesResponse.value
 }
 
-async function getIttaCount(battingcenter: any) {
-    // 行った！数を返すAPIの呼び出し、行った数をオブジェクトのメンバーに追加
-    const { data: itta_count, pending:itta_count_pending, error:itta_count_error , refresh: itta_count_refresh } =  await useBattingCenterApi().get(battingcenter.place_id)
-    battingcenter.itta_count = itta_count.value.count  
-}
+// async function getIttaCount(battingcenter: any) {
+//     // 行った！数を返すAPIの呼び出し、行った数をオブジェクトのメンバーに追加
+//     const { data: itta_count, pending:itta_count_pending, error:itta_count_error , refresh: itta_count_refresh } =  await useBattingCenterApi().get(battingcenter.place_id)
+//     battingcenter.itta_count = itta_count.value.count  
+// }
 
 async function submit() {
+  const { searchFormValid } = await searchForm.value.validate()  // 追加: バリデーション実行
+  if (!searchFormValid) {
+    return
+  }
   let selectedPrefectureName = await prefectures.value.find((item) => item.prefCode == pref.value).prefName
   let selectedCityName = await cities.value.find((item) => item.cityCode == city.value).cityName
-  const { data: result, pending:hoge, error: fuga, refresh: eiya } =  await useBattingCenterApi().post(`${selectedPrefectureName} ${selectedCityName}`, username)
+  const { data: result, pending:hoge, error: fuga, refresh: eiya } =  await useBattingCenterApi().post(`${selectedPrefectureName}${selectedCityName}`)
   battingcenters.value = result.value
-  for (const battingcenter of battingcenters.value) {
-    await getIttaCount(battingcenter)
-} 
+  // for (const battingcenter of battingcenters.value) {
+  //   await getIttaCount(battingcenter)
+// } 
 }
 
 // 行った！を登録
@@ -106,5 +126,12 @@ async function itta(battingcenter: any) {
   })
   await getIttaCount(battingcenter)
 }
+
+// prefのitem-valueが変更された場合にfetchCitiesを呼び出す
+watch(pref, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    fetchCities();
+  }
+});
 
 </script>

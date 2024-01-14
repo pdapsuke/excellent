@@ -44,9 +44,9 @@ export const useUserApi = () => {
     async get(id: number) {
       return useApi().get<UserResponse>("getUser", `/users/${id}`)
     },
-    // ユーザー作成
-    async create(user: UserPost) {
-      return useApi().post<UserResponse>("createUser", "/users/", user)
+    // ユーザーサインイン
+    async signIn(token: string) {
+      return useApi().post<UserResponse>("signInUser", "/users/signin", {}, {"Authorization": `Bearer ${token}`})
     },
     // ユーザー更新
     async update(id: number, user: UserPut) {

@@ -1,5 +1,6 @@
 <template>
 <div>
+  <Alert ref="alert" />
   <div class="my-10">
     <v-row justify="center">
       <v-col cols="12" lg="4" sm="6">
@@ -36,23 +37,37 @@ import { Auth } from 'aws-amplify';
 // テキストフィールドにバインドされるデータ
 const username = ref<string>("")
 const password = ref<string>("")
-const loginForm = ref<any>(null)  // v-form要素のref
+const alert = ref<any>(null)  // Alertコンポーネントのref
 
 async function signIn() {
-  const { data, pending, error, refresh } = await useAsyncData<any>(
-    "login",
+  const { data, error: cognitoError } = await useAsyncData<any>(
+    "cognitoSignIn",
     () => {
       return Auth.signIn(username.value, password.value)
     }
   )
-  if (!data.value || error.value) {
-    console.error(error.value)
+
+  // ログイン失敗ならアラートとログを出力してreturn
+  if (!data.value || cognitoError.value) {
+    alert.value.error(cognitoError.value)
+    console.error(cognitoError.value)
     return
   }
+
+  // ログイン成功ならCookieにトークンをセット
   useAuth().login(data.value.signInUserSession.idToken.jwtToken)
   console.log(data.value.signInUserSession.idToken.jwtToken)
-  // useUserApi().create({jwt_token: data.value.signInUserSession.idToken.jwtToken})
-  // useRouter().push({path: "/"})
+
+  // バックエンドにサインインリクエスト
+  const { error: backendError } = await useUserApi().signIn(data.value.signInUserSession.idToken.jwtToken)
+
+  // ログイン失敗ならアラートとログを出力してreturn
+  if (backendError.value) {
+    alert.value.error(backendError.value)
+    console.error(backendError.value)
+    return
+  }
+  useRouter().push({path: "/"})
 }
 
 </script>
