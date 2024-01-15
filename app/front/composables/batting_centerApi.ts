@@ -10,8 +10,8 @@ interface UserPost {
 export const useBattingCenterApi = () => {
     return {
       // 都道府県/市区町村ごとのバッティングセンター一覧取得
-      async post(prefecture_city: string, username: string) {
-        return useApi().post<any>("getBattingCenters", "/batting_centers/", {"prefecture_city": prefecture_city, "username": username})
+      async searchBattingCenters(prefecture_city: string) {
+        return useApi().get<any>("searchBattingCenters", "/batting_centers/", {"prefecture_city": prefecture_city})
       },
       // バッティングセンターの詳細情報を取得
       async getDetail(username: string, place_id: string) {

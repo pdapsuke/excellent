@@ -38,7 +38,7 @@ router = APIRouter()
 env = Environment()
 
 # バッティングセンター検索API
-@router.post("/batting_centers/", response_model=List[BattingCenterResponseSchema])
+@router.get("/batting_centers/", response_model=List[BattingCenterResponseSchema])
 def get_batting_centers(
     prefecture_city: str,
     user: CognitoClaims = Depends(get_current_user),

@@ -104,17 +104,21 @@ async function fetchCities() {
 // }
 
 async function submit() {
-  const { searchFormValid } = await searchForm.value.validate()  // 追加: バリデーション実行
+  const { valid: searchFormValid } = await searchForm.value.validate()  // 追加: バリデーション実行
   if (!searchFormValid) {
     return
   }
   let selectedPrefectureName = await prefectures.value.find((item) => item.prefCode == pref.value).prefName
   let selectedCityName = await cities.value.find((item) => item.cityCode == city.value).cityName
-  const { data: result, pending:hoge, error: fuga, refresh: eiya } =  await useBattingCenterApi().post(`${selectedPrefectureName}${selectedCityName}`)
-  battingcenters.value = result.value
-  // for (const battingcenter of battingcenters.value) {
-  //   await getIttaCount(battingcenter)
-// } 
+  const { data: results, error: searchError } =  await useBattingCenterApi().searchBattingCenters(`${selectedPrefectureName}${selectedCityName}`)
+
+  if (!results.value || searchError.value) {
+    alert.value.error(searchError.value)
+    console.error(fetchCitiesError.value)
+    return
+  }
+
+  battingcenters.value = results.value
 }
 
 // 行った！を登録
