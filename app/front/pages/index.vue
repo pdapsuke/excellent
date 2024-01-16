@@ -68,7 +68,9 @@ import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
 interface City {
   prefCode: number
-  prefName: string
+  cityCode: string
+  cityName: string
+  bigCityFlag: string
 }
 
 interface BattingCenter {
@@ -88,13 +90,13 @@ interface IttaResponse {
 }
 
 const pref = ref<number>()
-const city = ref<number>()
 const alert = ref<any>(null)
 const prefForm = ref<any>(null)
 const cityForm = ref<any>(null)
 const searchForm = ref<any>(null)
 const rules = useRules()
 
+let city = ref<number>()
 let cities = ref<City[]>()
 let battingcenters = ref<BattingCenter[]>()
 let ittaResponse = ref<IttaResponse>()
@@ -116,6 +118,7 @@ async function fetchCities() {
   }
 
   cities.value = citiesResponse.value
+  city.value = cities.value[0].cityCode
 }
 
 async function submit() {
@@ -168,7 +171,7 @@ async function itta(battingcenter: BattingCenter) {
 // prefのitem-valueが変更された場合にfetchCitiesを呼び出す
 watch(pref, (newValue, oldValue) => {
   if (newValue !== oldValue) {
-    fetchCities();
+    fetchCities()
   }
 });
 
