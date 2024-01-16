@@ -64,21 +64,41 @@
 </template>
 
 <script setup lang="ts">
-// refは明示的なインポートは不要だが、説明のために記述している
-import { ref } from 'vue'
 import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
+
+interface City {
+  prefCode: number
+  prefName: string
+}
+
+interface BattingCenter {
+    id: number
+    place_id: string
+    name: string
+    formatted_address: string
+    photos: any[] | undefined
+    itta_count: number
+    itta: string
+}
+
+interface IttaResponse {
+    id: number
+    itta_count: number
+    itta: string
+}
 
 const pref = ref<number>()
 const city = ref<number>()
 const alert = ref<any>(null)
-const rules = useRules()
 const prefForm = ref<any>(null)
 const cityForm = ref<any>(null)
 const searchForm = ref<any>(null)
-const username = useAuth().getUsername<string>()
+const rules = useRules()
 
-let cities = ref<any>()
-let battingcenters = ref<any>()
+let cities = ref<City[]>()
+let battingcenters = ref<BattingCenter[]>()
+let ittaResponse = ref<IttaResponse>()
+let ittaError = ref<any>()
 
 // 都道府県一覧取得
 const { data: prefectures, error: fetchPrefecturesError } = await usePrefectureCityApi().getAllPrefecture()
@@ -94,17 +114,12 @@ async function fetchCities() {
     console.error(fetchCitiesError.value)
     return
   }
+
   cities.value = citiesResponse.value
 }
 
-// async function getIttaCount(battingcenter: any) {
-//     // 行った！数を返すAPIの呼び出し、行った数をオブジェクトのメンバーに追加
-//     const { data: itta_count, pending:itta_count_pending, error:itta_count_error , refresh: itta_count_refresh } =  await useBattingCenterApi().get(battingcenter.place_id)
-//     battingcenter.itta_count = itta_count.value.count  
-// }
-
 async function submit() {
-  const { valid: searchFormValid } = await searchForm.value.validate()  // 追加: バリデーション実行
+  const { valid: searchFormValid } = await searchForm.value.validate()  // バリデーション実行
   if (!searchFormValid) {
     return
   }
@@ -121,14 +136,33 @@ async function submit() {
   battingcenters.value = results.value
 }
 
-// 行った！を登録
-async function itta(battingcenter: any) {
-  const { data: itta_response, pending:itta_pending, error: itta_error, refresh: itta_refresh } =  await useUserApi().updateItta({
-    username: username,
-    place_id: battingcenter.place_id,
-    itta: battingcenter.itta,
-  })
-  await getIttaCount(battingcenter)
+// 行った！フラグに応じて行った！を登録/解除
+async function itta(battingcenter: BattingCenter) {
+
+  // 行った！フラグが"yes"の場合、行った！ユーザーの追加
+  if (battingcenter.itta == "yes") {
+    ({ data: ittaResponse, error: ittaError } =  await useBattingCenterApi().addIttaUser(battingcenter.id))
+
+  // 行った！フラグが"no"の場合、行った！ユーザーの削除
+  } else if (battingcenter.itta == "no") {
+    ({data: ittaResponse, error: ittaError } =  await useBattingCenterApi().removeIttaUser(battingcenter.id))
+
+  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  } else {
+    alert.value.error("Bad Request")
+    console.error("Bad Request")
+    return
+  }
+
+  if (!ittaResponse.value || ittaError.value) {
+    alert.value.error(ittaError.value)
+    console.error(ittaError.value)
+    return
+  }
+
+  // 行った！フラグと行った数を更新
+  battingcenter.itta = ittaResponse.value.itta
+  battingcenter.itta_count = ittaResponse.value.itta_count
 }
 
 // prefのitem-valueが変更された場合にfetchCitiesを呼び出す

@@ -140,7 +140,7 @@ def get_batting_center_detail(
     )
 
 # バッティングセンターに行った！したユーザーの追加
-@router.post("/batting_centers/{batting_center_id}/", response_model=BattingCenterIttaUpdateSchema)
+@router.post("/batting_centers/{batting_center_id}", response_model=BattingCenterIttaUpdateSchema)
 def add_itta_users(
     batting_center_id: int,
     session: Session = Depends(get_session),
@@ -169,7 +169,7 @@ def add_itta_users(
     )
 
 # バッティングセンターに行った！したユーザーの削除
-@router.delete("/batting_centers/{batting_center_id}/", response_model=BattingCenterIttaUpdateSchema)
+@router.delete("/batting_centers/{batting_center_id}", response_model=BattingCenterIttaUpdateSchema)
 def remove_itta_users(
     batting_center_id: int,
     session: Session = Depends(get_session),
