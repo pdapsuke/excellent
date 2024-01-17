@@ -96,7 +96,7 @@ import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
 
 // パスパラメータ(itemId)を取得
-const { placeId } = useRoute().params
+const { battingCenterId } = useRoute().params
 const ball_speeds = ref<number[]>([])
 const pitch_types = ref<string[]>([])
 const batter_box = ref<string>("")
