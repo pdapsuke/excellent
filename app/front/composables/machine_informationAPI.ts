@@ -46,6 +46,10 @@ export const useMachineInformationApi = () => {
     async getMachineInformation(battingCenterId: number) {
       return useApi().get<MachineInformation>("getMachineInformations", `/batting_centers/${battingCenterId}/machine_informations`)
     },
+    // マシン情報の更新
+    async updateMachineInformation(battingCenterId: number, machineId: number, machineInformation: MachineInformationPost) {
+      return useApi().put<any>("postMachineInformation", `/batting_centers/${battingCenterId}/machine_informations/${machineId}`, machineInformation)
+    },
     // マシン情報削除
     async deleteMachineInformation(battingCenterId: number, machineId: number) {
       return useApi().delete<any>("deleteMachineInformation", `/batting_centers/${battingCenterId}/machine_informations/${machineId}`)

@@ -89,8 +89,15 @@
             <td>
               <div class="d-flex">
                 <div>
-                  <v-btn icon flat v-if="machine_information.is_owner==true">
-                    <v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
+                  <v-btn icon flat v-if="machine_information.is_owner==true"
+                    @click="editDialog.open({
+                      ball_speeds: ballSpeeds,
+                      breaking_balls: breakingBalls,
+                      batter_box: machine_information.batter_box,
+                      selected_ball_speeds: createSelectedBallSpeedsList(machine_information),
+                      selected_breaking_balls: createSelectedBreakingBallsList(machine_information),
+                      machineId: machine_information.id})"
+                      ><v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
                   </v-btn>
                 </div>
                 <div>
@@ -115,6 +122,16 @@
       ref="confirmDeletion"
       @confirm="deleteMachineInformation">
     </ConfirmDialog>
+    <!-- 編集確認ダイアログ -->
+    <EditDialog
+      title="マシン情報の編集"
+      confirmBtn="OK"
+      cancelBtn="キャンセル"
+      colorCancel="primary"
+      colorConfirm="error"
+      ref="editDialog"
+      @confirm="editMachineInformation">
+    </EditDialog>
   </div>
 </template>
 
@@ -153,11 +170,12 @@ interface UpdateAttaNakattaResponse{
 
 // パスパラメータ(itemId)を取得
 const { battingCenterId } = useRoute().params
-const batterBox = ref<string>()
 const username = useAuth().getUsername<string>()
 const alert = ref<any>(null)
 const confirmDeletion = ref<any>(null)
+const editDialog = ref<any>(null)
 
+let batterBox = ref<string>()
 let machineInformations = ref<MachineInformation[]>()
 let selectedBallSpeeds = ref<number[]>([])
 let selectedBreakingBalls = ref<number[]>([])
@@ -198,6 +216,16 @@ function dateFormat(datetime: string) {
   const minute = updated_date.getMinutes()
 
   return `${year}/${month}/${day} ${hour}:${minute}`
+}
+
+// マシン情報編集コンポーネントに選択済みの球速一覧を渡すための処理
+function createSelectedBallSpeedsList(machineInformation: MachineInformation) {
+  return machineInformation.ball_speeds.map((x) => x.id)
+}
+
+// マシン情報編集コンポーネントに選択済みの球種一覧を渡すための処理
+function createSelectedBreakingBallsList(machineInformation: MachineInformation) {
+  return machineInformation.breaking_balls.map((x) => x.id)
 }
 
 // 投稿、更新、削除後、マシン情報一覧を更新する処理
@@ -299,12 +327,40 @@ async function nakatta(machineInformation: MachineInformation) {
 async function deleteMachineInformation(confirm: boolean, params: {machineId: number}) {
   // キャンセルされた場合は何もしない
   if (!confirm) { return }
-  // ユーザー削除APIを呼び出す
+  // マシン情報削除APIを呼び出す
   const { error } = await useMachineInformationApi().deleteMachineInformation(battingCenterId, params.machineId)
 
   if (error.value instanceof Error) {
     alert.value.error(error.value)
     console.error(error.value)
+    return
+  }
+  // 成功: マシン情報一覧を更新
+  await updateMachineInformationList()
+}
+
+async function editMachineInformation(
+  confirm: boolean,
+  parameters: any,
+  selectedBatterBox: number[],
+  selectedBallSpeeds: number[],
+  selectedBreakingBalls: number[],
+) {
+  // キャンセルされた場合は何もしない
+  if (!confirm) { return }
+  // マシン情報更新APIを呼び出す
+  const { data: updateMachineInformationResponse, error: updateMachineInformationError } = await useMachineInformationApi().updateMachineInformation(
+    battingCenterId,
+    parameters.machineId,
+    {
+      ballspeed_ids: selectedBallSpeeds,
+      breaking_ball_ids: selectedBreakingBalls,
+      batter_box: selectedBatterBox,
+    })
+
+  if (updateMachineInformationError.value instanceof Error) {
+    alert.value.error(updateMachineInformationError.value)
+    console.error(updateMachineInformationError.value)
     return
   }
   // 成功: マシン情報一覧を更新
