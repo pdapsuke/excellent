@@ -27,6 +27,14 @@ interface MachineInformation{
   updated: string
 }
 
+interface UpdateAttaNakattaResponse{
+  id: number
+  atta_count: number
+  nakatta_count: number
+  atta: string
+  nakatta: string
+}
+
 // useBattingCenterApiの名前で関数をエクスポート
 export const useMachineInformationApi = () => {
   return {
@@ -49,6 +57,22 @@ export const useMachineInformationApi = () => {
     // 球種一覧の取得
     async getBreakingBalls() {
       return useApi().get<BreakingBall>("getBreakingBalls", "/machine_configurations/breaking_balls")
+    },
+    // バッティングセンターにあった！したユーザーの追加
+    async addAttaUser(battingcenterId: number, machineId: number) {
+      return useApi().post<UpdateAttaNakattaResponse>("addAttaUser", `/batting_centers/${battingcenterId}/machine_informations/${machineId}/atta_users`)
+    },
+    // バッティングセンターにあった！したユーザーの削除
+    async removeAttaUser(battingcenterId: number, machineId: number) {
+      return useApi().delete<UpdateAttaNakattaResponse>("removeAttaUser", `/batting_centers/${battingcenterId}/machine_informations/${machineId}/atta_users`)
+    },
+    // バッティングセンターになかった！したユーザーの追加
+    async addNakattaUser(battingcenterId: number, machineId: number) {
+      return useApi().post<UpdateAttaNakattaResponse>("addAttaUser", `/batting_centers/${battingcenterId}/machine_informations/${machineId}/nakatta_users`)
+    },
+    // バッティングセンターになかった！したユーザーの削除
+    async removeNakattaUser(battingcenterId: number, machineId: number) {
+      return useApi().delete<UpdateAttaNakattaResponse>("removeAttaUser", `/batting_centers/${battingcenterId}/machine_informations/${machineId}/nakatta_users`)
     },
   }
 }

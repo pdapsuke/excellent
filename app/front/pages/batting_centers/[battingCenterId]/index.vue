@@ -117,15 +117,25 @@ interface MachineInformation{
   updated: string
 }
 
+interface UpdateAttaNakattaResponse{
+  id: number
+  atta_count: number
+  nakatta_count: number
+  atta: string
+  nakatta: string
+}
+
 // パスパラメータ(itemId)を取得
 const { battingCenterId } = useRoute().params
 const batterBox = ref<string>()
 const username = useAuth().getUsername<string>()
 const alert = ref<any>(null)
 
-let machineInformations = ref<MachineInformation>()
+let machineInformations = ref<MachineInformation[]>()
 let selectedBallSpeeds = ref<number[]>([])
 let selectedBreakingBalls = ref<number[]>([])
+let updateAttaNakattaResponse = ref<UpdateAttaNakattaResponse>()
+let updateAttaNakattaError = ref<any>()
 
 const { data: detail, error: detailError } = await useBattingCenterApi().getDetail(battingCenterId)
 
@@ -136,7 +146,6 @@ if (!detail.value || detailError.value) {
 } else {
   machineInformations.value = detail.value.machine_informations
 }
-
 
 const { data: ballSpeeds, error: ballSpeedsError } = await useMachineInformationApi().getBallSpeeds()
 
@@ -194,26 +203,63 @@ async function post() {
   batterBox.value = undefined
 }
 
-// あった！を登録/解除
-async function atta(machine_information: any) {
-  const { data: atta_response, pending:atta_pending, error: atta_error, refresh: atta_refresh } =  await useUserApi().updateAttaNakatta({
-    username: username,
-    machine_id: machine_information.id,
-    atta_nakatta: "atta",
-    add_atta_nakatta: machine_information.atta
-  })
-  refresh()
+// あった！フラグに応じてあった！を登録/解除
+async function atta(machineInformation: MachineInformation) {
+  // あった！フラグが"yes"の場合、あった！ユーザーの追加
+  if (machineInformation.atta == "yes") {
+    ({ data: updateAttaNakattaResponse, error: updateAttaNakattaError } =  await useMachineInformationApi().addAttaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"no"の場合、行った！ユーザーの削除
+  } else if (machineInformation.atta == "no") {
+    ({ data: updateAttaNakattaResponse, error: updateAttaNakattaError } =  await useMachineInformationApi().removeAttaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  } else {
+    alert.value.error("Bad Request")
+    console.error("Bad Request")
+    return
+  }
+
+  if (!updateAttaNakattaResponse.value || updateAttaNakattaError.value) {
+    alert.value.error(updateAttaNakattaError.value)
+    console.error(updateAttaNakattaError.value)
+    return
+  }
+
+  // あった！なかった！フラグ数を更新
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].atta = updateAttaNakattaResponse.value.atta
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].atta_count = updateAttaNakattaResponse.value.atta_count
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].nakatta = updateAttaNakattaResponse.value.nakatta
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].nakatta_count = updateAttaNakattaResponse.value.nakatta_count
 }
 
-// なかった！を登録/解除
-async function nakatta(machine_information: any) {
-  const { data: nakatta_response, pending: nakatta_pending, error: nakatta_error, refresh: nakatta_refresh } =  await useUserApi().updateAttaNakatta({
-    username: username,
-    machine_id: machine_information.id,
-    atta_nakatta: "nakatta",
-    add_atta_nakatta: machine_information.nakatta
-  })
-  refresh()
+// なかった！フラグに応じてなかった！を登録/解除
+async function nakatta(machineInformation: MachineInformation) {
+  // なかった！フラグが"yes"の場合、なかった！ユーザーの追加
+  if (machineInformation.nakatta == "yes") {
+    ({ data: updateAttaNakattaResponse, error: updateAttaNakattaError } =  await useMachineInformationApi().addNakattaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"no"の場合、行った！ユーザーの削除
+  } else if (machineInformation.atta == "no") {
+    ({ data: updateAttaNakattaResponse, error: updateAttaNakattaError } =  await useMachineInformationApi().removeNakattaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  } else {
+    alert.value.error("Bad Request")
+    console.error("Bad Request")
+    return
+  }
+
+  if (!updateAttaNakattaResponse.value || updateAttaNakattaError.value) {
+    alert.value.error(updateAttaNakattaError.value)
+    console.error(updateAttaNakattaError.value)
+    return
+  }
+
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].atta = updateAttaNakattaResponse.value.atta
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].atta_count = updateAttaNakattaResponse.value.atta_count
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].nakatta = updateAttaNakattaResponse.value.nakatta
+  machineInformations.value.filter((x) => x.id == machineInformation.id)[0].nakatta_count = updateAttaNakattaResponse.value.nakatta_count
 }
 
 </script>
