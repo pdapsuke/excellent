@@ -55,7 +55,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="machine_information in detail.machine_informations"
+            v-for="machine_information in machineInformations"
             :key="machine_information.id">
             <td>{{ machine_information.ball_speeds.map((x) => x.speed).join(", ") }}</td>
             <td>{{ machine_information.breaking_balls.map((x) => x.name).join(", ") }}</td>
@@ -95,13 +95,35 @@
 <script setup lang="ts">
 import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
+interface BreakingBall {
+  id: number
+  name: string
+}
+
+interface BallSpeed {
+  id: number
+  speed: number
+}
+
+interface MachineInformation{
+  id: number
+  user_id: number
+  breaking_balls: BreakingBall[]
+  ball_speeds: BallSpeed[]
+  atta_count: number
+  atta: string
+  nakatta_count: number
+  nakatta: string
+  updated: string
+}
 
 // パスパラメータ(itemId)を取得
 const { battingCenterId } = useRoute().params
-const batterBox = ref<string>("")
+const batterBox = ref<string>()
 const username = useAuth().getUsername<string>()
 const alert = ref<any>(null)
 
+let machineInformations = ref<MachineInformation>()
 let selectedBallSpeeds = ref<number[]>([])
 let selectedBreakingBalls = ref<number[]>([])
 
@@ -111,11 +133,13 @@ const { data: detail, error: detailError } = await useBattingCenterApi().getDeta
 if (!detail.value || detailError.value) {
   alert.value.error(detailError.value)
   console.error(detailError.value)
+} else {
+  machineInformations.value = detail.value.machine_informations
 }
+
 
 const { data: ballSpeeds, error: ballSpeedsError } = await useMachineInformationApi().getBallSpeeds()
 
-// 球速一覧の取得に失敗した場合、アラートとログを出力
 if (!ballSpeeds.value || ballSpeedsError.value) {
   alert.value.error(ballSpeedsError.value)
   console.error(ballSpeedsError.value)
@@ -141,14 +165,33 @@ function dateFormat(datetime: string) {
 }
 
 async function post() {
-  const { data: postResponse, pending: postPending, error: postError, refresh: postRefresh } = await useMachineInformationApi().post({
-    ballspeed: ball_speeds.value,
-    pitch_type: pitch_types.value,
-    batter_box: batter_box.value,
-    username: username,
-    place_id: placeId,
-  })
-  refresh()
+  const { data: postResponse, error: postError } = await useMachineInformationApi().postMachineInformation(
+    battingCenterId,
+    {
+      ballspeed_ids: selectedBallSpeeds.value,
+      breaking_ball_ids: selectedBreakingBalls.value,
+      batter_box: batterBox.value,
+    }
+  )
+
+  if (!postResponse.value || postError.value) {
+    alert.value.error(postError.value)
+    console.error(postError.value)
+    return
+  }
+
+  const { data: machineInformationsFromAPI, error: getMachineInformationsError } = await useMachineInformationApi().getMachineInformation(battingCenterId)
+
+  if (!machineInformationsFromAPI.value || getMachineInformationsError.value) {
+    alert.value.error(getMachineInformationsError.value)
+    console.error(getMachineInformationsError.value)
+    return
+  }
+
+  machineInformations.value = machineInformationsFromAPI.value
+  selectedBallSpeeds.value = undefined
+  selectedBreakingBalls.value = undefined
+  batterBox.value = undefined
 }
 
 // あった！を登録/解除

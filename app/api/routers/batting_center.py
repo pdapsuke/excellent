@@ -199,7 +199,7 @@ def remove_itta_users(
     )
 
 # マシン情報の作成
-@router.post("/batting_centers/{id}/machine_informations/")
+@router.post("/batting_centers/{id}/machine_informations")
 def create_machine_information(
     id: int,
     data: MachineInformationCreateUpdateSchema,
@@ -239,7 +239,7 @@ def create_machine_information(
     return JSONResponse(status_code=200, content={"message": "machine information created"})
 
 # バッティングセンターごとのマシン情報の一覧取得
-@router.get("/batting_centers/{id}/machine_informations/", response_model=List[MachineInformationResponseSchema])
+@router.get("/batting_centers/{id}/machine_informations", response_model=List[MachineInformationResponseSchema])
 def get_machine_informations(
     id: int,
     session: Session = Depends(get_session),
