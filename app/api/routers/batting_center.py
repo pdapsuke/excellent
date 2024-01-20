@@ -118,7 +118,7 @@ def get_batting_center_detail(
 
         machine_information_responses.append(MachineInformationResponseSchema(
             id = machine_information.id,
-            user_id = machine_information.user_id,
+            is_owner = machine_information.set_owner_flag(current_user),
             breaking_balls = breaking_ball_responses,
             ball_speeds = ball_speed_responses,
             batter_box = machine_information.batter_box,
@@ -248,12 +248,13 @@ def get_machine_informations(
     current_user = crud_user.get_user_by_email(session=session, email=user.email)
     machine_informations = crud_machine.get_machine_informations_by_batting_center_id(session=session, batting_center_id=id)
 
-    # マシン情報にあった！なかった！の数とフラグをセット
+    # マシン情報に所有者フラグとあった！なかった！の数とフラグをセット
     for machine_information in machine_informations:
         machine_information.atta_count = machine_information.count_atta()
         machine_information.nakatta_count = machine_information.count_nakatta()
         machine_information.atta = machine_information.set_atta_flag(current_user)
         machine_information.nakatta = machine_information.set_nakatta_flag(current_user)
+        machine_information.is_owner = machine_information.set_owner_flag(current_user)
 
     return machine_informations
 

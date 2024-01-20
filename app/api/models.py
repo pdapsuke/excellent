@@ -155,6 +155,12 @@ class MachineInformation(Base):
     def count_nakatta(self) -> int:
         return len(self.nakatta_users)
 
+    def set_owner_flag(self, user: User) -> bool:
+        if user == self.user:
+            return True
+        else:
+            return False
+
 class MachineBreakingBall(Base):
     """machine_informationsとbreaking_ballsの中間テーブル"""
     __tablename__ = "machines_breaking_balls"

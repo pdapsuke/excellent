@@ -17,7 +17,7 @@ interface BallSpeed {
 
 interface MachineInformation{
   id: number
-  user_id: number
+  is_owner: boolean
   breaking_balls: BreakingBall[]
   ball_speeds: BallSpeed[]
   atta_count: number

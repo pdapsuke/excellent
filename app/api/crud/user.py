@@ -49,9 +49,10 @@ def create_mypage_response(current_user: User, target_machine_informations: List
             ball_speeds = [BallSpeedResponseSchema(id = bs.id, speed = bs.speed) for bs in machine_information.ball_speeds]
             machine_information_responses.append(MachineInformationResponseSchema(
                 id = machine_information.id,
-                user_id = machine_information.user_id,
+                is_owner = machine_information.set_owner_flag(current_user),
                 breaking_balls = breaking_balls,
                 ball_speeds = ball_speeds,
+                batter_box = machine_information.batter_box,
                 atta_count = machine_information.count_atta(),
                 nakatta_count = machine_information.count_nakatta(),
                 atta = machine_information.set_atta_flag(current_user),
