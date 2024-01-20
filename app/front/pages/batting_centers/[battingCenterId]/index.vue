@@ -1,31 +1,32 @@
 <template>
   <div>
+    <Alert ref="alert" />
     <div class="mb-3">
       <div class="text-h4">{{ detail.name }}</div>
       <v-select
-        v-model="ball_speeds"
+        v-model="selectedBallSpeeds"
         variant="outlined"
         label="球速"
-        :items="[{id: 1, value: 60}, {id: 2, value: 70}, {id: 3, value: 80}]"
-        item-title="value"
-        item-value="value"
+        :items="ballSpeeds"
+        item-title="speed"
+        item-value="id"
         clearable
         multiple
         dense
       ></v-select>
       <v-select
-        v-model="pitch_types"
+        v-model="selectedBreakingBalls"
         variant="outlined"
         label="球種"
-        :items="[{id: 1, value: 'ストレート'}, {id: 2, value: 'カーブ'}, {id: 3, value: 'フォーク'}]"
-        item-title="value"
-        item-value="value"
+        :items="breakingBalls"
+        item-title="name"
+        item-value="id"
         clearable
         multiple
         dense
       ></v-select>
       <v-select
-        v-model="batter_box"
+        v-model="batterBox"
         variant="outlined"
         label="打席"
         :items="[{id: 1, value: '左'}, {id: 2, value: '右'}, {id: 3, value: '両'}]"
@@ -97,11 +98,12 @@ import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
 // パスパラメータ(itemId)を取得
 const { battingCenterId } = useRoute().params
-const ball_speeds = ref<number[]>([])
-const pitch_types = ref<string[]>([])
-const batter_box = ref<string>("")
+const batterBox = ref<string>("")
 const username = useAuth().getUsername<string>()
+const alert = ref<any>(null)
 
+let selectedBallSpeeds = ref<number[]>([])
+let selectedBreakingBalls = ref<number[]>([])
 
 const { data: detail, error: detailError } = await useBattingCenterApi().getDetail(battingCenterId)
 
@@ -109,6 +111,22 @@ const { data: detail, error: detailError } = await useBattingCenterApi().getDeta
 if (!detail.value || detailError.value) {
   alert.value.error(detailError.value)
   console.error(detailError.value)
+}
+
+const { data: ballSpeeds, error: ballSpeedsError } = await useMachineInformationApi().getBallSpeeds()
+
+// 球速一覧の取得に失敗した場合、アラートとログを出力
+if (!ballSpeeds.value || ballSpeedsError.value) {
+  alert.value.error(ballSpeedsError.value)
+  console.error(ballSpeedsError.value)
+}
+
+const { data: breakingBalls, error: breakingBallsError } = await useMachineInformationApi().getBreakingBalls()
+
+// 球種一覧の取得に失敗した場合、アラートとログを出力
+if (!breakingBalls.value || breakingBallsError.value) {
+  alert.value.error(breakingBallsError.value)
+  console.error(breakingBallsError.value)
 }
 
 function dateFormat(datetime: string) {
