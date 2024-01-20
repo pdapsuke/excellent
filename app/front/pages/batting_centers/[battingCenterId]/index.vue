@@ -94,7 +94,7 @@
                   </v-btn>
                 </div>
                 <div>
-                  <v-btn icon flat v-if="machine_information.is_owner==true">
+                  <v-btn icon flat v-if="machine_information.is_owner==true" @click="confirmDeletion.open({machineId: machine_information.id})">
                     <v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
                   </v-btn>
                 </div>
@@ -104,6 +104,17 @@
         </tbody>
       </v-table>      
     </div>
+    <!-- 削除確認ダイアログ -->
+    <ConfirmDialog
+      title="マシン情報の削除"
+      message="本当に削除しますか"
+      confirmBtn="削除"
+      cancelBtn="キャンセル"
+      colorCancel="primary"
+      colorConfirm="error"
+      ref="confirmDeletion"
+      @confirm="deleteMachineInformation">
+    </ConfirmDialog>
   </div>
 </template>
 
@@ -145,6 +156,7 @@ const { battingCenterId } = useRoute().params
 const batterBox = ref<string>()
 const username = useAuth().getUsername<string>()
 const alert = ref<any>(null)
+const confirmDeletion = ref<any>(null)
 
 let machineInformations = ref<MachineInformation[]>()
 let selectedBallSpeeds = ref<number[]>([])
@@ -188,6 +200,19 @@ function dateFormat(datetime: string) {
   return `${year}/${month}/${day} ${hour}:${minute}`
 }
 
+// 投稿、更新、削除後、マシン情報一覧を更新する処理
+async function updateMachineInformationList() {
+  const { data: machineInformationsFromAPI, error: getMachineInformationsError, refresh: refreshMachineInformations } = await useMachineInformationApi().getMachineInformation(battingCenterId)
+
+  if (!machineInformationsFromAPI.value || getMachineInformationsError.value) {
+    alert.value.error(getMachineInformationsError.value)
+    console.error(getMachineInformationsError.value)
+    return
+  }
+
+  machineInformations.value = machineInformationsFromAPI.value
+}
+
 async function post() {
   const { data: postResponse, error: postError } = await useMachineInformationApi().postMachineInformation(
     battingCenterId,
@@ -204,15 +229,9 @@ async function post() {
     return
   }
 
-  const { data: machineInformationsFromAPI, error: getMachineInformationsError } = await useMachineInformationApi().getMachineInformation(battingCenterId)
+  await updateMachineInformationList()
 
-  if (!machineInformationsFromAPI.value || getMachineInformationsError.value) {
-    alert.value.error(getMachineInformationsError.value)
-    console.error(getMachineInformationsError.value)
-    return
-  }
-
-  machineInformations.value = machineInformationsFromAPI.value
+  // 選択したチェックボックスは空欄にする
   selectedBallSpeeds.value = undefined
   selectedBreakingBalls.value = undefined
   batterBox.value = undefined
@@ -277,4 +296,18 @@ async function nakatta(machineInformation: MachineInformation) {
   machineInformations.value.filter((x) => x.id == machineInformation.id)[0].nakatta_count = updateAttaNakattaResponse.value.nakatta_count
 }
 
+async function deleteMachineInformation(confirm: boolean, params: {machineId: number}) {
+  // キャンセルされた場合は何もしない
+  if (!confirm) { return }
+  // ユーザー削除APIを呼び出す
+  const { error } = await useMachineInformationApi().deleteMachineInformation(battingCenterId, params.machineId)
+
+  if (error.value instanceof Error) {
+    alert.value.error(error.value)
+    console.error(error.value)
+    return
+  }
+  // 成功: マシン情報一覧を更新
+  await updateMachineInformationList()
+}
 </script>
