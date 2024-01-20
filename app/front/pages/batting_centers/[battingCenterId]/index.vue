@@ -56,9 +56,9 @@
           <tr
             v-for="machine_information in detail.machine_informations"
             :key="machine_information.id">
-            <td>{{ machine_information.config.ballspeed.join(", ") }}</td>
-            <td>{{ machine_information.config.pitch_type.join(", ") }}</td>
-            <td>{{ machine_information.config.batter_box }}</td>
+            <td>{{ machine_information.ball_speeds.map((x) => x.speed).join(", ") }}</td>
+            <td>{{ machine_information.breaking_balls.map((x) => x.name).join(", ") }}</td>
+            <td>{{ machine_information.batter_box }}</td>
             <td>{{ dateFormat(machine_information.updated) }}</td>
             <td>{{ machine_information.atta_count }}</td>
             <td>
@@ -103,7 +103,13 @@ const batter_box = ref<string>("")
 const username = useAuth().getUsername<string>()
 
 
-const { data: detail, pending, error, refresh } = await useBattingCenterApi().getDetail(username, placeId)
+const { data: detail, error: detailError } = await useBattingCenterApi().getDetail(battingCenterId)
+
+// バッティングセンター詳細の取に失敗した場合、アラートとログを出力
+if (!detail.value || detailError.value) {
+  alert.value.error(detailError.value)
+  console.error(detailError.value)
+}
 
 function dateFormat(datetime: string) {
   const updated_date = new Date(datetime) 

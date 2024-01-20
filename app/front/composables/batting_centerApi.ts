@@ -8,6 +8,40 @@ interface BattingCenter {
   itta: string
 }
 
+interface BreakingBall {
+  id: number
+  name: string
+}
+
+
+interface BallSpeed {
+  id: number
+  speed: number
+}
+
+interface MachineInformation{
+    id: number
+    user_id: number
+    breaking_balls: BreakingBall[]
+    ball_speeds: BallSpeed[]
+    atta_count: number
+    atta: string
+    nakatta_count: number
+    nakatta: string
+    updated: string
+}
+
+interface BattingCenterDetail {
+  id: number
+  place_id: string
+  name: string
+  formatted_address: string
+  photos: any[] | undefined
+  itta_count: number
+  itta: string
+  machine_informations: MachineInformation[]
+}
+
 interface IttaResponse {
   id: number
   itta_count: number
@@ -22,8 +56,8 @@ export const useBattingCenterApi = () => {
         return useApi().get<BattingCenter>("searchBattingCenters", "/batting_centers/", {"prefecture_city": prefecture_city})
       },
       // バッティングセンターの詳細情報を取得
-      async getDetail(username: string, place_id: string) {
-        return useApi().get<any>("getDetail", `/batting_centers/${place_id}`, {"username": username})
+      async getDetail(battingcenterId: number) {
+        return useApi().get<BattingCenterDetail>("getDetail", `/batting_centers/${battingcenterId}`)
       },
       // バッティングセンターに行った！したユーザーの追加
       async addIttaUser(battingcenterId: number) {
