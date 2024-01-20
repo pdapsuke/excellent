@@ -51,6 +51,7 @@
             <th class="text-left">あった！ボタン</th>
             <th class="text-left">なかった！数</th>
             <th class="text-left">なかった！ボタン</th>
+            <th class="text-left"></th>
           </tr>
         </thead>
         <tbody>
@@ -85,6 +86,20 @@
                 @change="nakatta(machine_information)"
               ></v-switch>
             </td>
+            <td>
+              <div class="d-flex">
+                <div>
+                  <v-btn icon flat v-if="machine_information.is_owner==true">
+                    <v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
+                  </v-btn>
+                </div>
+                <div>
+                  <v-btn icon flat v-if="machine_information.is_owner==true">
+                    <v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
+                  </v-btn>
+                </div>
+              </div>
+            </td>
           </tr>
         </tbody>
       </v-table>      
@@ -107,7 +122,7 @@ interface BallSpeed {
 
 interface MachineInformation{
   id: number
-  user_id: number
+  is_owner: boolean
   breaking_balls: BreakingBall[]
   ball_speeds: BallSpeed[]
   atta_count: number
