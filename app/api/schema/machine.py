@@ -30,6 +30,7 @@ class MachineInformationResponseSchema(BaseModel):
     user_id: int
     breaking_balls: List[BreakingBallResponseSchema]
     ball_speeds: List[BallSpeedResponseSchema]
+    batter_box: str
     atta_count: int
     atta: str # あった！フラグ
     nakatta_count: int

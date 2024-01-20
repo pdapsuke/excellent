@@ -121,6 +121,7 @@ def get_batting_center_detail(
             user_id = machine_information.user_id,
             breaking_balls = breaking_ball_responses,
             ball_speeds = ball_speed_responses,
+            batter_box = machine_information.batter_box,
             atta_count = machine_information.count_atta(),
             nakatta_count = machine_information.count_nakatta(),
             atta = machine_information.set_atta_flag(current_user),
