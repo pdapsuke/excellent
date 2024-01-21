@@ -3,7 +3,7 @@
     <Alert ref="alert" />
     <div class="mb-10">
       <v-row class="justify-center">
-        <div class="font-weight-bold">行った！したバッティングセンター</div>
+        <NuxtLink :to="`/mypage/IttaBattingCenters`">行った！したバッティングセンター</NuxtLink>
         <v-divider class="border-opacity-90 mx-3" color="black" :thickness="1" vertical></v-divider>
         <NuxtLink :to="`/mypage/PostedMachineInformations`">投稿したマシン情報</NuxtLink>
         <v-divider class="border-opacity-90 mx-3" color="black" :thickness="1" vertical></v-divider>
@@ -11,20 +11,8 @@
         <v-divider class="border-opacity-90 mx-3" color="black" :thickness="1" vertical></v-divider>
         <NuxtLink :to="`/mypage/NakattaMachineInformations`">なかった！したマシン情報</NuxtLink>
         <v-divider class="border-opacity-90 mx-3" color="black" :thickness="1" vertical></v-divider>
-        <NuxtLink :to="`/mypage/withdrawal`">アカウント削除</NuxtLink>
+        <div class="font-weight-bold">アカウント削除</div>
       </v-row>
-    </div>
-    <div class="mb-3">
-      <v-table>
-        <thead>
-          <tr>
-            <th class="text-left">バッティングセンター名</th>
-            <th class="text-left">所在地</th>
-            <th class="text-left">行った！数</th>
-            <th class="text-left">行った！ボタン</th>
-          </tr>
-        </thead>
-      </v-table>      
     </div>
   </div>
 </template>
