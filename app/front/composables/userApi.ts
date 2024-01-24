@@ -52,6 +52,14 @@ export const useUserApi = () => {
     // 投稿したマシン情報の取得
     async getMyPostedMachines() {
       return useApi().get<BattingCenterAndMachines[]>("getMyPostedMachines", "/users/me/posted_machine_informations")
+    },
+    // 投稿したマシン情報の取得
+    async getMyAttaMachines() {
+      return useApi().get<BattingCenterAndMachines[]>("getMyAttaMachines", "/users/me/atta_machine_informations")
+    },
+    // 投稿したマシン情報の取得
+    async getMyNakattaMachines() {
+      return useApi().get<BattingCenterAndMachines[]>("getMyNakattaMachines", "/users/me/nakatta_machine_informations")
     }
   }
 }

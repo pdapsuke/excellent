@@ -15,21 +15,291 @@
       </v-row>
     </div>
 		<div class="mb-3">
-			<v-table>
-				<thead>
-					<tr>
-						<th class="text-left">球速 km/h</th>
-						<th class="text-left">球種</th>
-						<th class="text-left">打席</th>
-						<th class="text-left">更新日</th>
-						<th class="text-left">あった！数</th>
-						<th class="text-left">あった！ボタン</th>
-						<th class="text-left">なかった！数</th>
-						<th class="text-left">なかった！ボタン</th>
-						<th class="text-left"></th>
-					</tr>
-				</thead>
-			</v-table>
+			<div v-if="battingCenterAndMachines.length == 0">あった！したマシン情報はありません</div>
+      <div class="mb-10" v-else v-for="batting_center in battingCenterAndMachines" :key=batting_center.id>
+        <NuxtLink :to="`/batting_centers/${batting_center.id}`">{{ batting_center.name }}</NuxtLink>
+				<v-table>
+					<thead>
+						<tr>
+							<th class="text-left">球速 km/h</th>
+							<th class="text-left">球種</th>
+							<th class="text-left">打席</th>
+							<th class="text-left">更新日</th>
+							<th class="text-left">あった！数</th>
+							<th class="text-left">あった！ボタン</th>
+							<th class="text-left">なかった！数</th>
+							<th class="text-left">なかった！ボタン</th>
+							<th class="text-left"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							v-for="machine_information in batting_center.machine_informations"
+							:key="machine_information.id">
+							<td>{{ machine_information.ball_speeds.map((x) => x.speed).join(", ") }}</td>
+							<td>{{ machine_information.breaking_balls.map((x) => x.name).join(", ") }}</td>
+							<td>{{ machine_information.batter_box }}</td>
+							<td>{{ useUtil().formatDate(machine_information.updated) }}</td>
+							<td>{{ machine_information.atta_count }}</td>
+							<td>
+							<v-switch
+								v-model="machine_information.atta"
+								color="primary"
+								hide-details
+								true-value="yes"
+								false-value="no"
+								:label="`${machine_information.atta}`"
+								@change="atta(batting_center.id, machine_information)"
+							></v-switch>
+							</td>
+							<td>{{ machine_information.nakatta_count }}</td>
+							<td>
+							<v-switch
+								v-model="machine_information.nakatta"
+								color="primary"
+								hide-details
+								true-value="yes"
+								false-value="no"
+								:label="`${machine_information.nakatta}`"
+								@change="nakatta(batting_center.id, machine_information)"
+							></v-switch>
+							</td>
+							<td>
+							<div class="d-flex">
+								<div>
+								<v-btn icon flat v-if="machine_information.is_owner==true"
+									@click="editDialog.open({
+									ball_speeds: ballSpeeds,
+									breaking_balls: breakingBalls,
+									batter_box: machine_information.batter_box,
+									selected_ball_speeds: useUtil().createSelectedBallSpeedsList(machine_information),
+									selected_breaking_balls: useUtil().createSelectedBreakingBallsList(machine_information),
+									battingCenterId: batting_center.id,
+									machineId: machine_information.id})"
+									><v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
+								</v-btn>
+								</div>
+								<div>
+								<v-btn icon flat v-if="machine_information.is_owner==true" @click="confirmDeletion.open({
+									battingCenterId: batting_center.id,
+									machineId: machine_information.id})">
+									<v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
+								</v-btn>
+								</div>
+							</div>
+							</td>
+						</tr>
+					</tbody>
+				</v-table>
+			</div>
 		</div>
+    <!-- 削除確認ダイアログ -->
+    <ConfirmDialog
+      title="マシン情報の削除"
+      message="本当に削除しますか"
+      confirmBtn="削除"
+      cancelBtn="キャンセル"
+      colorCancel="primary"
+      colorConfirm="error"
+      ref="confirmDeletion"
+      @confirm="deleteMachineInformation">
+    </ConfirmDialog>
+    <!-- 編集確認ダイアログ -->
+    <EditDialog
+      title="マシン情報の編集"
+      confirmBtn="OK"
+      cancelBtn="キャンセル"
+      colorCancel="primary"
+      colorConfirm="error"
+      ref="editDialog"
+      @confirm="editMachineInformation">
+    </EditDialog>
   </div>
 </template>
+
+<script setup lang="ts">
+import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
+
+interface BreakingBall {
+  id: number
+  name: string
+}
+
+interface BallSpeed {
+  id: number
+  speed: number
+}
+
+interface MachineInformation{
+  id: number
+  is_owner: boolean
+  breaking_balls: BreakingBall[]
+  ball_speeds: BallSpeed[]
+  atta_count: number
+  atta: string
+  nakatta_count: number
+  nakatta: string
+  updated: string
+}
+
+interface UpdateAttaNakattaResponse{
+  id: number
+  atta_count: number
+  nakatta_count: number
+  atta: string
+  nakatta: string
+}
+
+interface BattingCenterAndMachines {
+  id: number
+  place_id: string
+  name: string
+  formatted_address: string
+  machine_informations: MachineInformation[]
+}
+
+const alert = ref<any>(null)
+const confirmDeletion = ref<any>(null)
+const editDialog = ref<any>(null)
+
+let batterBox = ref<string>()
+let battingCenterAndMachines = ref<BattingCenterAndMachines[]>()
+let selectedBallSpeeds = ref<number[]>([])
+let selectedBreakingBalls = ref<number[]>([])
+let attaNakattaUpdateResponse = ref<UpdateAttaNakattaResponse>()
+let attaNakattaUpdateError = ref<any>()
+
+// 投稿したマシン情報と関連するバッティングセンターの一覧を取得
+const { data, error, refresh } = await useUserApi().getMyAttaMachines()
+// 一覧に失敗した場合、アラートとログを出力
+if (!data.value || error.value) {
+  alert.value.error(error.value)
+  console.error(error.value)
+} else {
+  battingCenterAndMachines.value = data.value
+}
+
+const { data: ballSpeeds, error: ballSpeedsError } = await useMachineInformationApi().getBallSpeeds()
+// 球速一覧の取得に失敗した場合、アラートとログを出力
+if (!ballSpeeds.value || ballSpeedsError.value) {
+  alert.value.error(ballSpeedsError.value)
+  console.error(ballSpeedsError.value)
+}
+
+const { data: breakingBalls, error: breakingBallsError } = await useMachineInformationApi().getBreakingBalls()
+// 球種一覧の取得に失敗した場合、アラートとログを出力
+if (!breakingBalls.value || breakingBallsError.value) {
+  alert.value.error(breakingBallsError.value)
+  console.error(breakingBallsError.value)
+}
+
+// あった！フラグに応じてあった！を登録/解除
+async function atta(battingCenterId: number, machineInformation: MachineInformation) {
+  // あった！フラグが"yes"の場合、あった！ユーザーの追加
+  if (machineInformation.atta == "yes") {
+    ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().addAttaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"no"の場合、行った！ユーザーの削除
+  } else if (machineInformation.atta == "no") {
+    ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().removeAttaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  } else {
+    alert.value.error("Bad Request")
+    console.error("Bad Request")
+    return
+  }
+
+  if (!attaNakattaUpdateResponse.value || attaNakattaUpdateError.value) {
+    alert.value.error(attaNakattaUpdateError.value)
+    console.error(attaNakattaUpdateError.value)
+    return
+  }
+
+  useUtil().updateAttaNakattaForBattingCenterAndMachines(battingCenterId, battingCenterAndMachines.value, machineInformation, attaNakattaUpdateResponse.value)
+}
+
+// なかった！フラグに応じてなかった！を登録/解除
+async function nakatta(battingCenterId: number, machineInformation: MachineInformation) {
+  // なかった！フラグが"yes"の場合、なかった！ユーザーの追加
+  if (machineInformation.nakatta == "yes") {
+    ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().addNakattaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"no"の場合、行った！ユーザーの削除
+  } else if (machineInformation.atta == "no") {
+    ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().removeNakattaUser(battingCenterId, machineInformation.id))
+
+  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  } else {
+    alert.value.error("Bad Request")
+    console.error("Bad Request")
+    return
+  }
+
+  if (!attaNakattaUpdateResponse.value || attaNakattaUpdateError.value) {
+    alert.value.error(attaNakattaUpdateError.value)
+    console.error(attaNakattaUpdateError.value)
+    return
+  }
+
+  useUtil().updateAttaNakattaForBattingCenterAndMachines(battingCenterId, battingCenterAndMachines.value, machineInformation, attaNakattaUpdateResponse.value)
+}
+
+
+async function deleteMachineInformation(confirm: boolean, parameters: any) {
+  // キャンセルされた場合は何もしない
+  if (!confirm) { return }
+  // マシン情報削除APIを呼び出す
+  const { error } = await useMachineInformationApi().deleteMachineInformation(parameters.battingCenterId, parameters.machineId)
+
+  if (error.value instanceof Error) {
+    alert.value.error(error.value)
+    console.error(error.value)
+    return
+  }
+  // 成功: マシン情報一覧を更新
+  await refresh()
+
+	if (!data.value || error.value) {
+  alert.value.error(error.value)
+  console.error(error.value)
+	} else {
+  battingCenterAndMachines.value = data.value
+	}
+}
+
+async function editMachineInformation(
+  confirm: boolean,
+  parameters: any,
+  selectedBatterBox: number[],
+  selectedBallSpeeds: number[],
+  selectedBreakingBalls: number[],
+) {
+  // キャンセルされた場合は何もしない
+  if (!confirm) { return }
+  // マシン情報更新APIを呼び出す
+  const { data: updateMachineInformationResponse, error: updateMachineInformationError } = await useMachineInformationApi().updateMachineInformation(
+    parameters.battingCenterId,
+    parameters.machineId,
+    {
+      ballspeed_ids: selectedBallSpeeds,
+      breaking_ball_ids: selectedBreakingBalls,
+      batter_box: selectedBatterBox,
+    })
+
+  if (updateMachineInformationError.value instanceof Error) {
+    alert.value.error(updateMachineInformationError.value)
+    console.error(updateMachineInformationError.value)
+    return
+  }
+
+	await refresh()
+
+	if (!data.value || error.value) {
+  alert.value.error(error.value)
+  console.error(error.value)
+	} else {
+  battingCenterAndMachines.value = data.value
+	}
+}
+</script>
