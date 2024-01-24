@@ -92,7 +92,6 @@ function confirm(confirm: boolean) {
 // propsを定義
 const props = withDefaults(defineProps<Props>(), {
   title: "",
-  message: "",
   cancelBtn: "Cancel",
   confirmBtn: "OK",
   colorCancel: "primary",
