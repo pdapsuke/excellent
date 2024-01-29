@@ -50,6 +50,8 @@
   </div>
 </template>
 <script setup lang="ts">
+// ミドルウェアによるログインチェック
+definePageMeta({ middleware: ["auth"] })
 
 interface BattingCenter {
     id: number

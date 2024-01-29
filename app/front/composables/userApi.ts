@@ -45,6 +45,10 @@ export const useUserApi = () => {
     async signIn(token: string) {
       return useApi().post<any>("signInUser", "/users/signin", {}, {"Authorization": `Bearer ${token}`})
     },
+    // トークン検証
+    async validateToken(token: string) {
+      return useApi().post<any>("validateToken", "/users/me/token", {"id_token": `${token}`})
+    },
     // 行った！したバッティングセンターの取得
     async getMyIttaBattingCenters() {
       return useApi().get<BattingCenter>("getMyIttaBattingCenters", "/users/me/itta_centers")

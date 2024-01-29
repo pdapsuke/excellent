@@ -66,6 +66,9 @@
 <script setup lang="ts">
 import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
+// ミドルウェアによるログインチェック
+definePageMeta({ middleware: ["auth"] })
+
 interface City {
   prefCode: number
   cityCode: string

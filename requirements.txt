@@ -5,3 +5,4 @@ alembic
 pytest
 requests
 fastapi-cloudauth
+pyjwt[crypto]

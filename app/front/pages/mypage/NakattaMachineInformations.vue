@@ -120,6 +120,9 @@
 <script setup lang="ts">
 import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
+// ミドルウェアによるログインチェック
+definePageMeta({ middleware: ["auth"] })
+
 interface BreakingBall {
   id: number
   name: string

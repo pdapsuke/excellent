@@ -58,10 +58,8 @@
 <script setup lang="ts">
 import { mdiPlusBoxMultipleOutline, mdiNoteEditOutline, mdiDeleteForeverOutline, mdiRefresh } from '@mdi/js'
 
-// ミドルウェアによる認証チェック
-definePageMeta({
-  middleware: ["auth"]
-})
+// ミドルウェアによるログインチェック
+definePageMeta({ middleware: ["auth"] })
 
 const alert = ref<any>(null) // Alertコンポーネントのref
 const confirmDeletion = ref<any>(null) //ConfirmDialogコンポーネントのref
