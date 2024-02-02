@@ -45,6 +45,10 @@ export const useUserApi = () => {
     async signIn(token: string) {
       return useApi().post<any>("signInUser", "/users/signin", {}, {"Authorization": `Bearer ${token}`})
     },
+    // ユーザー(DB管理)削除
+    async deleteUser(email: string) {
+      return useApi().delete<any>("deleteUser", "/users", {"email": email})
+    },
     // トークン検証
     async validateToken(token: string) {
       return useApi().post<any>("validateToken", "/users/me/token", {"id_token": `${token}`})

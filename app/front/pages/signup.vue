@@ -119,7 +119,16 @@ async function signIn() {
     console.error(error.value)
     return
   }
+  // ログイン成功ならCookieにトークンをセット
   useAuth().login(data.value.signInUserSession.idToken.jwtToken)
+  // バックエンドにサインインリクエスト
+  const { error: backendError } = await useUserApi().signIn(data.value.signInUserSession.idToken.jwtToken)
+  // ログイン失敗ならアラートとログを出力してreturn
+  if (backendError.value) {
+    alert.value.error(backendError.value)
+    console.error(backendError.value)
+    return
+  }
   useRouter().push({path: "/"})
 }
 </script>

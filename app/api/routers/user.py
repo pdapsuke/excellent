@@ -18,7 +18,7 @@ from schema.batting_center import (
     BattingCenterResponseSchema,
 )
 from schema.user import (
-    IdTokenPostSchema,
+    IdTokenPostSchema, UserDeleteSchema,
 )
 from session import get_session
 from utils import logger
@@ -163,3 +163,14 @@ def get_atta_machine_informations(
     result_list = crud_user.create_mypage_response(current_user=current_user, target_machine_informations=atta_machine_informations)
 
     return result_list
+
+# ユーザー削除
+@router.delete("/users")
+def delete_user(
+    data: UserDeleteSchema,
+    session: Session = Depends(get_session),
+):
+    user = crud_user.get_user_by_email(session=session, email=data.email)
+    session.delete(user)
+    session.commit()
+    return JSONResponse(status_code=200, content={"message": "user deleted."})

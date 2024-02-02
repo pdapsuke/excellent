@@ -55,6 +55,12 @@ class Auth {
     return (payload && !!payload["cognito:username"]) ? payload["cognito:username"] : null
   }
 
+  // JWTのペイロードからEmailを取得する
+  public static getUserEmail(): string | null {
+    let payload = Auth.getPayload();
+    return (payload && !!payload["email"]) ? payload["email"] : null
+  }
+
   // JWTのペイロードのパーミッションに指定したパーミッションが含まれているかを判定する
   public static hasPermission(required_permissions: string[]): boolean {
     let required_permission_set = new Set(required_permissions)
