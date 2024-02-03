@@ -9,19 +9,22 @@
             <v-img :src="`/logo-no-background.png`" contain height="180"></v-img>
           </div>
         </v-card-title>
-        <v-form ref="loginForm" lazy-validation>
+        <v-form ref="signupForm" lazy-validation>
           <v-text-field
             v-model="username"
             label="Username"
+            :rules="[rules.required]"
           ></v-text-field>
           <v-text-field
             v-model="email"
             label="Email"
+            :rules="[rules.emailValidate]"
           ></v-text-field>
           <v-text-field
             v-model="password"
             label="Password"
             type="password"
+            :rules="[rules.passwordValidate]"
           ></v-text-field>
           <div class="d-flex justify-end">
             <v-btn color="secondary" class="mr-4" type="submit" @click.prevent="signUp">signUp</v-btn>
@@ -50,7 +53,8 @@ const username = ref<string>("")
 const email = ref<string>("")
 const password = ref<string>("")
 const code = ref<string>("")
-const loginForm = ref<any>(null)  // v-form要素のref
+const signupForm = ref<any>(null)
+const rules = useRules()
 
 type SignUpParameters = {
   username: string;
@@ -69,6 +73,12 @@ type SignInParameters = {
 };
 
 async function signUp() {
+  // バリデーション
+  const {valid, errors} = await signupForm.value.validate()
+  if (!valid) {
+    return
+  }
+
   const { data, pending, error, refresh } = await useAsyncData<any>(
     "signup",
     () => {
