@@ -40,6 +40,9 @@
 import { Auth } from 'aws-amplify'
 import { mdiCheck } from '@mdi/js'
 
+// ミドルウェアによるログインチェック
+definePageMeta({ middleware: ["disable-direct-access"] })
+
 const code = ref<string>("")
 const username = useRoute().query.username
 const confirmForm = ref<any>(null) // confirmFormのref
@@ -53,23 +56,16 @@ async function confirmSignUp() {
   if (!valid) {
     return
   }
-  const { data, pending, error, refresh } = await useAsyncData<any>(
-    "confirmSignup",
-    () => {
-      Auth.confirmSignUp(username, code.value)
-    }
-  )
-  if (error.value) {
-    console.error(error.value)
-		alert.value.error(error.value)
+	try {
+    await Auth.confirmSignUp(username, code.value)
+	} catch(error) {
+		alert.value.error("認証コードが違います")
     return
-  } else {
-		// サインアップ確認後、/signinにリダイレクト
-		alert.value.success("ユーザーが作成されました")
-		setTimeout(() => {
-			useRouter().push({path: "/signin"})
-		}, 2000)
 	}
+	alert.value.success("ユーザーが作成されました")
+	setTimeout(() => {
+		useRouter().push({path: "/signin"})
+	}, 2000)
 }
 
 // 認証コードを再送
