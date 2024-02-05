@@ -94,7 +94,7 @@ async function signUp() {
     alert.value.error(error.value)
     return
   } else {
-    await navigateTo({
+      await navigateTo({
       path: '/confirm',
       query: {
         username: username.value,

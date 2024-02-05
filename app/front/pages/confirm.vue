@@ -12,19 +12,24 @@
 						</v-card-title>
 						<v-form ref="confirmForm" lazy-validation>
 							<v-text-field
-									v-model="code"
-									label="verification code"
-									:rules="[rules.required]"
+								v-model="code"
+								label="verification code"
+								:rules="[rules.required]"
 							></v-text-field>
 							<v-row>
-								<v-col cols="12" lg="6" sm="6" class="d-flex justify-start">
+								<v-col cols="12" lg="6" sm="3" class="d-flex justify-start">
 									<div>
-											<v-btn color="info" class="mr-4" type="submit" @click.prevent="resendConfirmationCode">resend code</v-btn>
+										<NuxtLink :to="`/signup`"><v-btn color="info" class="mr-4">cancel</v-btn></NuxtLink>
 									</div>
 								</v-col>
-								<v-col cols="12" lg="6" sm="6" class="d-flex justify-end">
+								<v-col cols="12" lg="6" sm="4" class="d-flex justify-start">
 									<div>
-											<v-btn color="error" class="mr-4" type="submit" @click.prevent="confirmSignUp">confirm</v-btn>
+										<v-btn color="info" class="mr-4" type="submit" @click.prevent="resendConfirmationCode">resend code</v-btn>
+									</div>
+								</v-col>
+								<v-col cols="12" lg="6" sm="5" class="d-flex justify-end">
+									<div>
+										<v-btn color="error" class="mr-4" type="submit" @click.prevent="confirmSignUp">confirm</v-btn>
 									</div>
 								</v-col>
 							</v-row>
