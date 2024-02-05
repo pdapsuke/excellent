@@ -17,17 +17,17 @@
 								:rules="[rules.required]"
 							></v-text-field>
 							<v-row>
-								<v-col cols="12" lg="6" sm="3" class="d-flex justify-start">
+								<v-col cols="12" lg="3" sm="3" class="d-flex justify-start">
 									<div>
 										<NuxtLink :to="`/signup`"><v-btn color="info" class="mr-4">cancel</v-btn></NuxtLink>
 									</div>
 								</v-col>
-								<v-col cols="12" lg="6" sm="4" class="d-flex justify-start">
+								<v-col cols="12" lg="4" sm="4" class="d-flex justify-start">
 									<div>
 										<v-btn color="info" class="mr-4" type="submit" @click.prevent="resendConfirmationCode">resend code</v-btn>
 									</div>
 								</v-col>
-								<v-col cols="12" lg="6" sm="5" class="d-flex justify-end">
+								<v-col cols="12" lg="5" sm="5" class="d-flex justify-end">
 									<div>
 										<v-btn color="error" class="mr-4" type="submit" @click.prevent="confirmSignUp">confirm</v-btn>
 									</div>

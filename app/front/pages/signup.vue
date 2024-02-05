@@ -3,7 +3,7 @@
 		<Alert ref="alert" />
     <div class="my-10">
       <v-row justify="center">
-        <v-col cols="12" lg="4" sm="6">
+        <v-col cols="12" lg="6" sm="6">
         <v-card class="pa-5">
           <v-card-title class="d-flex justify-center mb-3">
             <div>
@@ -22,14 +22,27 @@
               :rules="[rules.emailValidate]"
             ></v-text-field>
             <v-text-field
+              label="Confirm Email"
+              :rules="[rules.required, rules.emailConfirm(email)]"
+            ></v-text-field>
+            <v-text-field
               v-model="password"
               label="Password"
               type="password"
               :rules="[rules.passwordValidate]"
             ></v-text-field>
-            <div class="d-flex justify-end">
-              <v-btn color="secondary" class="mr-4" type="submit" @click.prevent="signUp">signUp</v-btn>
-            </div>
+            <v-row>
+              <v-col cols="12" lg="9" sm="9" class="d-flex justify-start">
+                <div>
+                  <NuxtLink :to="`/signin`">アカウントをお持ちの方はこちら</NuxtLink>
+                </div>
+              </v-col>
+              <v-col cols="12" lg="3" sm="3" class="d-flex justify-end">
+                <div>
+                  <v-btn color="secondary" class="mr-4" type="submit" @click.prevent="signUp">signUp</v-btn>
+                </div>
+              </v-col>
+            </v-row>
           </v-form>
         </v-card>
         </v-col>

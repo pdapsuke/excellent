@@ -50,4 +50,11 @@ class ValidationRules {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return (v && emailRegex.test(v) || "Must be email address format")
   }
+
+  // 入力したEmailアドレスと確認用のものが一致するか
+  public static emailConfirm(v: string) {
+    return (confirm: string) => {
+      return (v == confirm) || "The addresses you entered do not match."
+    }
+  }
 }
