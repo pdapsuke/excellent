@@ -33,15 +33,10 @@
             <td>{{ battingcenter.formatted_address }}</td>
             <td>{{ battingcenter.itta_count }}</td>
             <td>
-              <v-switch
-                v-model="battingcenter.itta"
-                color="primary"
-                hide-details
-                true-value="yes"
-                false-value="no"
-                :label="`${battingcenter.itta}`"
-                @change="itta(battingcenter)"
-              ></v-switch>
+              <IttaButton
+                :itta="battingcenter.itta"
+                @click="itta(battingcenter)"
+              ></IttaButton>
             </td>
           </tr>
         </tbody>
@@ -89,11 +84,11 @@ if (!data.value || error.value) {
 async function itta(battingcenter: BattingCenter) {
 
   // 行った！フラグが"yes"の場合、行った！ユーザーの追加
-  if (battingcenter.itta == "yes") {
+  if (battingcenter.itta == "no") {
     ({ data: ittaResponse, error: ittaError } =  await useBattingCenterApi().addIttaUser(battingcenter.id))
 
   // 行った！フラグが"no"の場合、行った！ユーザーの削除
-  } else if (battingcenter.itta == "no") {
+  } else if (battingcenter.itta == "yes") {
     ({data: ittaResponse, error: ittaError } =  await useBattingCenterApi().removeIttaUser(battingcenter.id))
 
   // 行った！フラグが"yes", "no"以外の場合、エラー出力
