@@ -42,27 +42,19 @@
 							<td>{{ useUtil().formatDate(machine_information.updated) }}</td>
 							<td>{{ machine_information.atta_count }}</td>
 							<td>
-							<v-switch
-								v-model="machine_information.atta"
-								color="primary"
-								hide-details
-								true-value="yes"
-								false-value="no"
-								:label="`${machine_information.atta}`"
-								@change="atta(batting_center.id, machine_information)"
-							></v-switch>
+              <AttaButton
+                :atta="machine_information.atta"
+                @click="atta(batting_center.id, machine_information)"
+              >
+              </AttaButton>
 							</td>
 							<td>{{ machine_information.nakatta_count }}</td>
 							<td>
-							<v-switch
-								v-model="machine_information.nakatta"
-								color="primary"
-								hide-details
-								true-value="yes"
-								false-value="no"
-								:label="`${machine_information.nakatta}`"
-								@change="nakatta(batting_center.id, machine_information)"
-							></v-switch>
+              <NakattaButton
+                :nakatta="machine_information.nakatta"
+                @click="nakatta(batting_center.id, machine_information)"
+              >
+              </NakattaButton>
 							</td>
 							<td>
 							<div class="d-flex">
@@ -198,15 +190,15 @@ if (!breakingBalls.value || breakingBallsError.value) {
 
 // あった！フラグに応じてあった！を登録/解除
 async function atta(battingCenterId: number, machineInformation: MachineInformation) {
-  // あった！フラグが"yes"の場合、あった！ユーザーの追加
-  if (machineInformation.atta == "yes") {
+  // あった！フラグが"no"の場合、あった！ユーザーの追加
+  if (machineInformation.atta == "no") {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().addAttaUser(battingCenterId, machineInformation.id))
 
-  // 行った！フラグが"no"の場合、行った！ユーザーの削除
-  } else if (machineInformation.atta == "no") {
+  // あった！フラグが"yes"の場合、あった！ユーザーの削除
+  } else if (machineInformation.atta == "yes") {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().removeAttaUser(battingCenterId, machineInformation.id))
 
-  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  // あった！フラグが"yes", "no"以外の場合、エラー出力
   } else {
     alert.value.error("Bad Request")
     console.error("Bad Request")
@@ -224,15 +216,15 @@ async function atta(battingCenterId: number, machineInformation: MachineInformat
 
 // なかった！フラグに応じてなかった！を登録/解除
 async function nakatta(battingCenterId: number, machineInformation: MachineInformation) {
-  // なかった！フラグが"yes"の場合、なかった！ユーザーの追加
-  if (machineInformation.nakatta == "yes") {
+  // なかった！フラグが"no"の場合、なかった！ユーザーの追加
+  if (machineInformation.nakatta == "no") {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().addNakattaUser(battingCenterId, machineInformation.id))
 
-  // 行った！フラグが"no"の場合、行った！ユーザーの削除
-  } else if (machineInformation.atta == "no") {
+  // なかった！フラグが"yes"の場合、なかった！ユーザーの削除
+  } else if (machineInformation.nakatta == "yes") {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().removeNakattaUser(battingCenterId, machineInformation.id))
 
-  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  // なかった！フラグが"yes", "no"以外の場合、エラー出力
   } else {
     alert.value.error("Bad Request")
     console.error("Bad Request")
