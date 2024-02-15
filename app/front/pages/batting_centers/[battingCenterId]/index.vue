@@ -3,6 +3,16 @@
     <Alert ref="alert" />
     <div class="mb-3">
       <div class="text-h4">{{ detail.name }}</div>
+    </div>
+    <div class="d-flex justify-center mb-5">
+      <v-img
+        :src="images[0]"
+        contain
+        max-height="400"
+        max-width="800"
+      ></v-img>
+    </div>
+    <div class="mb-3">
       <v-select
         v-model="selectedBallSpeeds"
         variant="outlined"
@@ -169,6 +179,7 @@ const username = useAuth().getUsername<string>()
 const alert = ref<any>(null)
 const confirmDeletion = ref<any>(null)
 const editDialog = ref<any>(null)
+const images = ref<string[]>(null)
 
 let batterBox = ref<string>()
 let machineInformations = ref<MachineInformation[]>()
@@ -185,6 +196,7 @@ if (!detail.value || detailError.value) {
   console.error(detailError.value)
 } else {
   machineInformations.value = detail.value.machine_informations
+  images.value = detail.value.photos
 }
 
 const { data: ballSpeeds, error: ballSpeedsError } = await useMachineInformationApi().getBallSpeeds()

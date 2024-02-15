@@ -13,7 +13,7 @@ class BattingCenterResponseSchema(BaseModel):
     place_id: str
     name: str
     formatted_address: str
-    photos: Optional[List]
+    photos: Optional[str]
     itta_count: int
     itta: str # 行った！フラグ
 
@@ -22,7 +22,7 @@ class BattingCenterDetailResponseSchema(BaseModel):
     place_id: str
     name: str
     formatted_address: str
-    photos: Optional[List]
+    photos: List[str]
     itta_count: int
     itta: str # 行った！フラグ
     machine_informations: List[MachineInformationResponseSchema]
@@ -34,6 +34,15 @@ class BattingCenterMypageResponseSchema(BaseModel):
     name: str
     formatted_address: str
     machine_informations: List[MachineInformationResponseSchema]
+
+# 行った！したバッティングセンターを返す ＊画像情報は返さない
+class IttaBattingCenterResponseSchema(BaseModel):
+    id: int
+    place_id: str
+    name: str
+    formatted_address: str
+    itta_count: int
+    itta: str # 行った！フラグ
 
 class BattingCenterIttaUpdateSchema(BaseModel):
     id: int

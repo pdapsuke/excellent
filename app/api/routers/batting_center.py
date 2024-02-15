@@ -1,3 +1,4 @@
+import base64
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -56,6 +57,16 @@ def get_batting_centers(
     filtered_responses = list(filter(lambda x: prefecture_city in x["formatted_address"], responses))
 
     for response in filtered_responses:
+        if "photos" in response:
+            # photo_referenceを使用して取得した画像のバイナリをbase64文字列に変換
+            photo_reference = response["photos"][0]["photo_reference"]
+            photo_request_payload = {"photo_reference": photo_reference, \
+                "key": env.find_place_api_key, \
+                "maxwidth": "400"}
+            photo_reference_response = requests.get(env.photo_reference_url, params=photo_request_payload)
+            base64_encoded_image = "data:image/png;base64,"+base64.b64encode(photo_reference_response.content).decode("utf-8")
+        else:
+            base64_encoded_image = None
 
         # レスポンスで返すバッティングセンターの情報を定義
         batting_center = BattingCenterResponseSchema(
@@ -63,7 +74,7 @@ def get_batting_centers(
             place_id = response["place_id"],
             name = response["name"],
             formatted_address = response["formatted_address"].split("、", 1)[-1], # "日本、"という文字列が先頭につくため加工する
-            photos = response["photos"] if "photos" in response else None,
+            photos = base64_encoded_image,
             itta_count = 0, # NOTE: 仮置き
             itta = "no" # NOTE: 仮置き
         )
@@ -129,12 +140,25 @@ def get_batting_center_detail(
             updated = machine_information.updated
         ))
 
+    # photo_referenceを使用して取得した画像のバイナリをbase64文字列に変換し格納する
+    base64_encorded_images: List[str] = []
+
+    if "photos" in response:
+        for photo in response["photos"][:3]: # 処理時間短縮のため、画像取得は3枚とする
+            photo_reference = photo["photo_reference"]
+            payload = {"photo_reference": photo_reference, \
+            "key": env.find_place_api_key, \
+            "maxwidth": "400"}
+            photo_reference_response = requests.get(env.photo_reference_url, params=payload)
+            base64_encoded_image = "data:image/png;base64,"+base64.b64encode(photo_reference_response.content).decode("utf-8")
+            base64_encorded_images.append(base64_encoded_image)
+
     return BattingCenterDetailResponseSchema(
         id = id,
         place_id = target_batting_center.place_id,
         name = response["name"],
         formatted_address = response["formatted_address"].split("、", 1)[-1], # "日本、"という文字列が先頭につくため加工する
-        photos = response["photos"] if "photos" in response else None,
+        photos = base64_encorded_images,
         itta_count = target_batting_center.count_itta(),
         itta = target_batting_center.set_itta_flag(current_user),
         machine_informations = machine_information_responses

@@ -32,6 +32,7 @@
       <v-table>
         <thead>
           <tr>
+            <th class="text-left"></th>
             <th class="text-left">バッティングセンター名</th>
             <th class="text-left">所在地</th>
             <th class="text-left">行った！数</th>
@@ -42,6 +43,16 @@
           <tr
             v-for="battingcenter in battingcenters"
             :key="battingcenter.place_id">
+            <td>
+              <div class="d-flex justify-center ma-5">
+                <v-img
+                  :src="battingcenter.photos"
+                  contain
+                  max-height="200"
+                  max-width="200"
+                ></v-img>
+              </div>
+            </td>
             <td><NuxtLink :to="`/batting_centers/${battingcenter.id}`">{{ battingcenter.name }}</NuxtLink></td>
             <td>{{ battingcenter.formatted_address }}</td>
             <td>{{ battingcenter.itta_count }}</td>

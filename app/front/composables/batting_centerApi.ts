@@ -55,6 +55,10 @@ export const useBattingCenterApi = () => {
       async searchBattingCenters(prefecture_city: string) {
         return useApi().get<BattingCenter>("searchBattingCenters", "/batting_centers/", {"prefecture_city": prefecture_city})
       },
+      // 都道府県/市区町村ごとのバッティングセンター一覧取得
+      async getBattingCenterPhoto(photoReferences: string[]) {
+        return useApi().get<BattingCenter>("getBattingCenterPhoto", "/batting_centers/photos", {"photo_reference": photoReferences})
+      },
       // バッティングセンターの詳細情報を取得
       async getDetail(battingcenterId: number) {
         return useApi().get<BattingCenterDetail>("getDetail", `/batting_centers/${battingcenterId}`)

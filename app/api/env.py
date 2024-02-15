@@ -12,3 +12,4 @@ class Environment(BaseSettings):
     find_place_url: str
     place_details_url: str
     find_place_api_key: str
+    photo_reference_url: str

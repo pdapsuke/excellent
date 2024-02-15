@@ -16,6 +16,7 @@ from models import User
 from schema.batting_center import (
     BattingCenterMypageResponseSchema,
     BattingCenterResponseSchema,
+    IttaBattingCenterResponseSchema,
 )
 from schema.user import (
     IdTokenPostSchema, UserDeleteSchema,
@@ -91,7 +92,7 @@ def validate_token(
         return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": f"id_token invalid.({e})"})
 
 # 現在のユーザーが行った！したバッティングセンターの取得
-@router.get("/users/me/itta_centers", response_model=List[BattingCenterResponseSchema])
+@router.get("/users/me/itta_centers", response_model=List[IttaBattingCenterResponseSchema])
 def get_itta_centers(
     session: Session = Depends(get_session),
     user: CognitoClaims = Depends(get_current_user)
@@ -107,12 +108,11 @@ def get_itta_centers(
         # Google PlaceDetails APIへ施設名、住所、写真をリクエスト
         payload = {"place_id": itta_batting_center.place_id, "language": "ja", "fiels": "name,formatted_address,photos", "key": env.find_place_api_key}
         response = requests.get(env.place_details_url, params=payload).json()["result"]
-        result_list.append(BattingCenterResponseSchema(
+        result_list.append(IttaBattingCenterResponseSchema(
             id = itta_batting_center.id,
             place_id = itta_batting_center.place_id,
             name = response["name"],
             formatted_address = response["formatted_address"].split("、", 1)[-1], # "日本、"という文字列が先頭につくため加工する
-            photos = response["photos"] if "photos" in response else None,
             itta_count = itta_batting_center.count_itta(),
             itta = itta_batting_center.set_itta_flag(current_user),
         ))
