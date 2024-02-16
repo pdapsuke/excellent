@@ -4,13 +4,20 @@
     <div class="mb-3">
       <div class="text-h4">{{ detail.name }}</div>
     </div>
-    <div class="d-flex justify-center mb-5">
-      <v-img
-        :src="images[0]"
-        contain
-        max-height="400"
-        max-width="800"
-      ></v-img>
+    <div class="mb-3">
+      <Carousel :autoplay="5000" :wrapAround="true">
+        <Slide v-for="image in images" :key="image">
+          <v-img
+            :src="image"
+            contain
+            max-height="400"
+            max-width="800"
+          ></v-img>
+        </Slide>
+        <template #addons>
+          <Pagination />
+        </template>
+      </Carousel>
     </div>
     <div class="mb-3">
       <v-select

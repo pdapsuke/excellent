@@ -10,6 +10,7 @@ export default defineNuxtConfig({
   },
   css: ['@/assets/main.scss'],
   modules: [
+    'vue3-carousel-nuxt',
     // vite-plugin-vuetifyで必要なvuetifyのコンポーネントのみをバンドルするための設定
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {

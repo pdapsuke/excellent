@@ -17,6 +17,7 @@
     "sass": "^1.63.6",
     "typescript": "latest",
     "vite-plugin-vuetify": "^1.0.2",
+    "vue3-carousel-nuxt": "^1.1.0",
     "vuetify": "^3.3.5"
   }
 }
