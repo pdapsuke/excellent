@@ -28,7 +28,15 @@
         @click="submit"
       >検索</v-btn>
     </div>
-    <div class="mb-3">
+    <div v-if="loading==true" class="d-flex justify-center ma-5">
+      <v-progress-circular
+        color="primary"
+        indeterminate
+        :size="49"
+        :width="7"
+      ></v-progress-circular>
+    </div>
+    <div v-if="loading==false">
       <v-table>
         <thead>
           <tr>
@@ -70,7 +78,6 @@
 </template>
 
 <script setup lang="ts">
-import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
 // ミドルウェアによるログインチェック
 definePageMeta({ middleware: ["auth"] })
@@ -104,6 +111,7 @@ const prefForm = ref<any>(null)
 const cityForm = ref<any>(null)
 const searchForm = ref<any>(null)
 const rules = useRules()
+const loading = ref<boolean>(null) // ローディングスピナー表示フラグ
 
 let city = ref<number>()
 let cities = ref<City[]>()
@@ -131,10 +139,12 @@ async function fetchCities() {
 }
 
 async function submit() {
+  // フォームバリデーション
   const { valid: searchFormValid } = await searchForm.value.validate()  // バリデーション実行
   if (!searchFormValid) {
     return
   }
+  loading.value = true // ローディングスピナー表示
   let selectedPrefectureName = await prefectures.value.find((item) => item.prefCode == pref.value).prefName
   let selectedCityName = await cities.value.find((item) => item.cityCode == city.value).cityName
   const { data: results, error: searchError } =  await useBattingCenterApi().searchBattingCenters(`${selectedPrefectureName}${selectedCityName}`)
@@ -142,10 +152,12 @@ async function submit() {
   if (!results.value || searchError.value) {
     alert.value.error(searchError.value)
     console.error(fetchCitiesError.value)
+    loading.value = false // ローディングスピナー非表示
     return
   }
 
   battingcenters.value = results.value
+  loading.value = false // ローディングスピナー非表示
 }
 
 // 行った！フラグに応じて行った！を登録/解除
