@@ -2,31 +2,55 @@
   <div>
     <Alert ref="alert" />
     <div class="mb-3">
-      <div class="text-h4">{{ detail.name }}</div>
-    </div>
-    <div class="mb-3">
-      <Carousel :autoplay="5000" :wrapAround="true">
-        <Slide v-for="image in images" :key="image">
-          <v-img
-            :src="image"
-            contain
-            max-height="400"
-            max-width="800"
-          ></v-img>
-        </Slide>
-        <template #addons>
-          <Pagination />
-        </template>
-      </Carousel>
-    </div>
-    <div class="mb-3">
-      <div class="d-flex justify-end">
-        <v-btn color="secondary" class="mr-4" type="submit" @click="createDialog.open({
-          ball_speeds: ballSpeeds,
-          breaking_balls: breakingBalls,
-          })">新規投稿</v-btn>
+      <div class="d-flex align-center mb-2">
+        <div class="text-h4 mr-13">{{ detail.name }}</div>
+        <div class="text-h4 font-italic mr-3">{{ detail.itta_count }}</div>
+        <div class="me-auto"><IttaButton :itta="detail.itta" @click="itta(detail)"></IttaButton></div>
+        <div class="mr-5"><NuxtLink :to="`/`">検索画面に戻る</NuxtLink></div>
       </div>
+      <div class="text-h7">{{ detail.formatted_address }}</div>
     </div>
+    <v-row class="mb-5 d-flex align-center">
+      <v-col cols="12" lg="6" sm="6">
+        <div>
+          <Carousel :autoplay="5000" :wrapAround="true">
+            <Slide v-for="image in images" :key="image">
+              <v-img
+                :src="image"
+                contain
+                max-height="400"
+                max-width="800"
+              ></v-img>
+            </Slide>
+            <template #addons>
+              <Pagination />
+            </template>
+          </Carousel>
+        </div>
+      </v-col>
+      <v-col cols="12" lg="6" sm="6">
+        <div>
+          <div>
+            <v-list lines="one">
+              <v-list-item
+                v-for="(item, i) in checkListsForPost"
+                :key="i">
+                <template v-slot:prepend>
+                  <v-icon color="primary" :icon="mdiCheck"></v-icon>
+                </template>
+                <v-list-item-title v-text="checkListsForPost[i]"></v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
+          <div class="d-flex flex-row-reverse">
+            <v-btn color="secondary" class="mr-4" type="submit" @click="createDialog.open({
+              ball_speeds: ballSpeeds,
+              breaking_balls: breakingBalls,
+              })">新規投稿</v-btn>
+          </div>
+        </div>
+      </v-col>
+    </v-row>
     <div class="mb-3">
       <v-table>
         <thead>
@@ -35,10 +59,8 @@
             <th class="text-left">球種</th>
             <th class="text-left">打席</th>
             <th class="text-left">更新日</th>
-            <th class="text-left">あった！数</th>
-            <th class="text-left">あった！ボタン</th>
-            <th class="text-left">なかった！数</th>
-            <th class="text-left">なかった！ボタン</th>
+            <th class="text-left"></th>
+            <th class="text-left"></th>
             <th class="text-left"></th>
           </tr>
         </thead>
@@ -50,21 +72,27 @@
             <td>{{ machine_information.breaking_balls.map((x) => x.name).join(", ") }}</td>
             <td>{{ machine_information.batter_box }}</td>
             <td>{{ useUtil().formatDate(machine_information.updated) }}</td>
-            <td>{{ machine_information.atta_count }}</td>
             <td>
-              <AttaButton
-                :atta="machine_information.atta"
-                @click="atta(machine_information)"
-              >
-              </AttaButton>
+              <div class="d-flex justify-end align-center">
+                <div>{{ machine_information.atta_count }}</div>
+                <div>
+                  <AttaButton
+                    :atta="machine_information.atta"
+                    @click="atta(machine_information)"
+                  ></AttaButton>
+                </div>
+              </div>
             </td>
-            <td>{{ machine_information.nakatta_count }}</td>
             <td>
-              <NakattaButton
-                :nakatta="machine_information.nakatta"
-                @click="nakatta(machine_information)"
-              >
-              </NakattaButton>
+              <div class="d-flex justify-start align-center">
+                <div>{{ machine_information.nakatta_count }}</div>
+                <div>
+                  <NakattaButton
+                    :nakatta="machine_information.nakatta"
+                    @click="nakatta(machine_information)"
+                  ></NakattaButton>
+                </div>
+              </div>
             </td>
             <td>
               <div class="d-flex">
@@ -126,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
+import { mdiCheck, mdiNoteEditOutline, mdiDeleteForeverOutline } from '@mdi/js'
 
 // ミドルウェアによるログインチェック
 definePageMeta({ middleware: ["auth"] })
@@ -161,6 +189,12 @@ interface UpdateAttaNakattaResponse{
   nakatta: string
 }
 
+interface IttaResponse {
+    id: number
+    itta_count: number
+    itta: string
+}
+
 // パスパラメータ(itemId)を取得
 const { battingCenterId } = useRoute().params
 const username = useAuth().getUsername<string>()
@@ -169,6 +203,11 @@ const confirmDeletion = ref<any>(null)
 const createDialog = ref<any>(null)
 const editDialog = ref<any>(null)
 const images = ref<string[]>(null)
+const checkListsForPost = [
+  "設置されているピッチングマシンの情報をシェアしよう！",
+  "投稿はピッチングマシン1台毎",
+  "あった！なかった！ボタンでマシンがあったか評価しよう！",
+]
 
 let batterBox = ref<string>()
 let machineInformations = ref<MachineInformation[]>()
@@ -176,6 +215,8 @@ let selectedBallSpeeds = ref<number[]>([])
 let selectedBreakingBalls = ref<number[]>([])
 let attaNakattaUpdateResponse = ref<UpdateAttaNakattaResponse>()
 let attaNakattaUpdateError = ref<any>()
+let ittaResponse = ref<IttaResponse>()
+let ittaError = ref<any>()
 
 const { data: detail, error: detailError } = await useBattingCenterApi().getDetail(battingCenterId)
 
@@ -214,6 +255,31 @@ async function updateMachineInformationList() {
   }
 
   machineInformations.value = machineInformationsFromAPI.value
+}
+
+// 行った！フラグに応じて行った！を登録/解除
+async function itta(detail: any) {
+  // 行った！フラグが"yes"の場合、行った！ユーザーの追加
+  if (detail.itta == "no") {
+    ({ data: ittaResponse, error: ittaError } =  await useBattingCenterApi().addIttaUser(detail.id))
+  // 行った！フラグが"no"の場合、行った！ユーザーの削除
+  } else if (detail.itta == "yes") {
+    ({data: ittaResponse, error: ittaError } =  await useBattingCenterApi().removeIttaUser(detail.id))
+  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  } else {
+    alert.value.error("Bad Request")
+    console.error("Bad Request")
+    return
+  }
+  // レスポンスが正しく返ってこなかった場合、エラー出力
+  if (!ittaResponse.value || ittaError.value) {
+    alert.value.error(ittaError.value)
+    console.error(ittaError.value)
+    return
+  }
+  // 行った！フラグと行った数を更新
+  detail.itta = ittaResponse.value.itta
+  detail.itta_count = ittaResponse.value.itta_count
 }
 
 // あった！フラグに応じてあった！を登録/解除

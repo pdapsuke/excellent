@@ -4,12 +4,12 @@
     <div class="mb-3">
       <v-list lines="one" class="mb-3 mx-5">
         <v-list-item
-          v-for="(item, i) in checkListsForDeletion"
+          v-for="(item, i) in checkListsForSearch"
           :key="i">
           <template v-slot:prepend>
             <v-icon color="primary" :icon="mdiCheck"></v-icon>
           </template>
-          <v-list-item-title v-text="checkListsForDeletion[i]"></v-list-item-title>
+          <v-list-item-title v-text="checkListsForSearch[i]"></v-list-item-title>
         </v-list-item>
       </v-list>
       <v-row class="mx-5">
@@ -145,7 +145,7 @@ const cityForm = ref<any>(null)
 const searchForm = ref<any>(null)
 const rules = useRules()
 const loading = ref<boolean>(null) // ローディングスピナー表示フラグ
-const checkListsForDeletion = [
+const checkListsForSearch = [
   "都道府県、市区町村を選んでバッティングセンターを探そう！",
   "各バッティングセンターに設置されているピッチングマシン情報を共有しよう！",
   "たまにバッティングセンター以外の施設が出てくるのはご愛嬌",
