@@ -34,9 +34,9 @@
           variant="outlined"
           label="打席"
           :items="[{id: 1, value: '左'}, {id: 2, value: '右'}, {id: 3, value: '両'}]"
-          :rules="[rules.required]"
           item-title="value"
           item-value="value"
+          :rules="[rules.required]"
           clearable
           dense
         ></v-select>
@@ -70,19 +70,14 @@ const dialog = ref<boolean>(false)
 let parameters: Parameters = {}
 
 // 選択済の球速、球種を格納する変数
-let selectedBatterBox = ref<string>()
-let selectedBallSpeeds = ref<number[]>()
-let selectedBreakingBalls = ref<number[]>()
+const selectedBatterBox = ref<string>()
+const selectedBallSpeeds = ref<number[]>()
+const selectedBreakingBalls = ref<number[]>()
 
 // 親コンポーネントがダイアログを開くときに呼び出す関数
 function open(v: any = {}) {
   dialog.value = true // ダイアログを表示
   parameters = v
-
-  // パラメータから対象マシンで既に設定されている球速、球種を受け取る
-  selectedBatterBox.value = parameters.batter_box
-  selectedBallSpeeds.value = parameters.selected_ball_speeds
-  selectedBreakingBalls.value = parameters.selected_breaking_balls
 }
 
 async function confirm(confirm: boolean) {
@@ -97,11 +92,13 @@ async function confirm(confirm: boolean) {
   emit(
     "confirm",
     confirm,
-    parameters,
     selectedBatterBox.value,
     selectedBallSpeeds.value,
     selectedBreakingBalls.value,
   )
+    selectedBatterBox.value = undefined
+    selectedBallSpeeds.value = undefined
+    selectedBreakingBalls.value = undefined
 }
 
 // propsを定義
@@ -117,7 +114,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   confirm: [
     ok: boolean,
-    parameters: any,
     selectedBatterBox: number[],
     selectedBallSpeeds: number[],
     selectedBreakingBalls: number[],

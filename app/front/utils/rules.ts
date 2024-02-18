@@ -8,6 +8,11 @@ class ValidationRules {
     return !!v || "Required."
   }
 
+  // 1つ以上の配列要素バリデーション
+  public static arrayElementRequired(v: number[]) {
+    return (!!v && v.length >= 1) || "Required."
+  }
+
   // 文字列長の最大値のバリデーション
   public static maxLength(n: number) {
     return (v: string) => {

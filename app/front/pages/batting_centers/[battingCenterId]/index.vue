@@ -20,40 +20,11 @@
       </Carousel>
     </div>
     <div class="mb-3">
-      <v-select
-        v-model="selectedBallSpeeds"
-        variant="outlined"
-        label="球速"
-        :items="ballSpeeds"
-        item-title="speed"
-        item-value="id"
-        clearable
-        multiple
-        dense
-      ></v-select>
-      <v-select
-        v-model="selectedBreakingBalls"
-        variant="outlined"
-        label="球種"
-        :items="breakingBalls"
-        item-title="name"
-        item-value="id"
-        clearable
-        multiple
-        dense
-      ></v-select>
-      <v-select
-        v-model="batterBox"
-        variant="outlined"
-        label="打席"
-        :items="[{id: 1, value: '左'}, {id: 2, value: '右'}, {id: 3, value: '両'}]"
-        item-title="value"
-        item-value="value"
-        clearable
-        dense
-      ></v-select>
       <div class="d-flex justify-end">
-        <v-btn color="secondary" class="mr-4" type="submit" @click.prevent="post">投稿</v-btn>
+        <v-btn color="secondary" class="mr-4" type="submit" @click="createDialog.open({
+          ball_speeds: ballSpeeds,
+          breaking_balls: breakingBalls,
+          })">新規投稿</v-btn>
       </div>
     </div>
     <div class="mb-3">
@@ -132,6 +103,16 @@
       @confirm="deleteMachineInformation">
     </ConfirmDialog>
     <!-- 編集確認ダイアログ -->
+    <CreateDialog
+      title="マシン情報の新規投稿"
+      confirmBtn="投稿"
+      cancelBtn="キャンセル"
+      colorCancel="primary"
+      colorConfirm="error"
+      ref="createDialog"
+      @confirm="createMachineInformation">
+    </CreateDialog>
+    <!-- 編集確認ダイアログ -->
     <EditDialog
       title="マシン情報の編集"
       confirmBtn="OK"
@@ -185,6 +166,7 @@ const { battingCenterId } = useRoute().params
 const username = useAuth().getUsername<string>()
 const alert = ref<any>(null)
 const confirmDeletion = ref<any>(null)
+const createDialog = ref<any>(null)
 const editDialog = ref<any>(null)
 const images = ref<string[]>(null)
 
@@ -232,30 +214,6 @@ async function updateMachineInformationList() {
   }
 
   machineInformations.value = machineInformationsFromAPI.value
-}
-
-async function post() {
-  const { data: postResponse, error: postError } = await useMachineInformationApi().postMachineInformation(
-    battingCenterId,
-    {
-      ballspeed_ids: selectedBallSpeeds.value,
-      breaking_ball_ids: selectedBreakingBalls.value,
-      batter_box: batterBox.value,
-    }
-  )
-
-  if (!postResponse.value || postError.value) {
-    alert.value.error(postError.value)
-    console.error(postError.value)
-    return
-  }
-
-  await updateMachineInformationList()
-
-  // 選択したチェックボックスは空欄にする
-  selectedBallSpeeds.value = undefined
-  selectedBreakingBalls.value = undefined
-  batterBox.value = undefined
 }
 
 // あった！フラグに応じてあった！を登録/解除
@@ -325,6 +283,35 @@ async function deleteMachineInformation(confirm: boolean, params: {machineId: nu
   await updateMachineInformationList()
 }
 
+// マシン情報の新規作成
+async function createMachineInformation(
+  confirm: boolean,
+  selectedBatterBox: number[],
+  selectedBallSpeeds: number[],
+  selectedBreakingBalls: number[],
+) {
+  // キャンセルされた場合は何もしない
+  if (!confirm) { return }
+  // マシン情報作成APIを呼び出す
+  const { data: postResponse, error: postError } = await useMachineInformationApi().postMachineInformation(
+    battingCenterId,
+    {
+      ballspeed_ids: selectedBallSpeeds,
+      breaking_ball_ids: selectedBreakingBalls,
+      batter_box: selectedBatterBox,
+    }
+  )
+
+  if (!postResponse.value || postError.value) {
+    alert.value.error(postError.value)
+    console.error(postError.value)
+    return
+  }
+
+  await updateMachineInformationList()
+}
+
+// マシン情報の編集
 async function editMachineInformation(
   confirm: boolean,
   parameters: any,
