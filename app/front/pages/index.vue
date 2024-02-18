@@ -2,31 +2,58 @@
   <div>
     <Alert ref="alert" />
     <div class="mb-3">
-      <div class="text-h4">Items</div>
-      <v-form ref="searchForm" lazy-validation>
-        <v-select
-          label="prefectures"
-          v-model="pref"
-          :items="prefectures"
-          :rules="[rules.required]"
-          item-title="prefName"
-          item-value="prefCode"
-        >
-        </v-select>
-        <v-select
-          label="cities"
-          :items="cities"
-          :rules="[rules.required]"
-          item-title="cityName"
-          item-value="cityCode"
-          v-model="city"
-        >
-        </v-select>
-      </v-form>
-      <v-btn
-        color="primary"
-        @click="submit"
-      >検索</v-btn>
+      <v-list lines="one" class="mb-3 mx-5">
+        <v-list-item
+          v-for="(item, i) in checkListsForDeletion"
+          :key="i">
+          <template v-slot:prepend>
+            <v-icon color="primary" :icon="mdiCheck"></v-icon>
+          </template>
+          <v-list-item-title v-text="checkListsForDeletion[i]"></v-list-item-title>
+        </v-list-item>
+      </v-list>
+      <v-row class="mx-5">
+        <v-col cols="12" lg="10" sm="10">
+          <div>
+            <v-form ref="searchForm" lazy-validation>
+              <v-row>
+                <v-col cols="12" lg="6" sm="6">
+                  <div>
+                    <v-select
+                      label="都道府県"
+                      v-model="pref"
+                      :items="prefectures"
+                      :rules="[rules.required]"
+                      item-title="prefName"
+                      item-value="prefCode"
+                    ></v-select>
+                  </div>
+                </v-col>
+                <v-col cols="12" lg="6" sm="6">
+                  <div>
+                    <v-select
+                      label="市区町村"
+                      :items="cities"
+                      :rules="[rules.required]"
+                      item-title="cityName"
+                      item-value="cityCode"
+                      v-model="city"
+                    ></v-select>
+                  </div>
+                </v-col>
+              </v-row>
+            </v-form>
+          </div>
+        </v-col>
+        <v-col cols="12" lg="2" sm="2">
+          <div>
+            <v-btn
+              color="primary"
+              @click="submit"
+            >検索</v-btn>
+          </div>
+        </v-col>
+      </v-row>
     </div>
     <div v-if="loading==true" class="d-flex justify-center ma-5">
       <v-progress-circular
@@ -37,14 +64,13 @@
       ></v-progress-circular>
     </div>
     <div v-if="loading==false">
-      <v-table>
+      <v-table class="d-flex justify-start">
         <thead>
           <tr>
             <th class="text-left"></th>
-            <th class="text-left">バッティングセンター名</th>
-            <th class="text-left">所在地</th>
-            <th class="text-left">行った！数</th>
-            <th class="text-left">行った！ボタン</th>
+            <th class="text-left">バッティングセンター情報</th>
+            <th class="text-left"></th>
+            <th class="text-left"></th>
           </tr>
         </thead>
         <tbody>
@@ -56,13 +82,19 @@
                 <v-img
                   :src="battingcenter.photos"
                   contain
-                  max-height="200"
-                  max-width="200"
+                  max-height="300"
+                  max-width="300"
                 ></v-img>
               </div>
             </td>
-            <td><NuxtLink :to="`/batting_centers/${battingcenter.id}`">{{ battingcenter.name }}</NuxtLink></td>
-            <td>{{ battingcenter.formatted_address }}</td>
+            <td>
+              <div class="d-flex justify-start">
+                <div><NuxtLink :to="`/batting_centers/${battingcenter.id}`">{{ battingcenter.name }}</NuxtLink></div>
+              </div>
+              <div class="d-flex justify-start">
+                <div>{{ battingcenter.formatted_address }}</div>
+              </div>
+            </td>
             <td>{{ battingcenter.itta_count }}</td>
             <td>
               <IttaButton
@@ -78,6 +110,7 @@
 </template>
 
 <script setup lang="ts">
+import { mdiCheck } from '@mdi/js'
 
 // ミドルウェアによるログインチェック
 definePageMeta({ middleware: ["auth"] })
@@ -112,6 +145,11 @@ const cityForm = ref<any>(null)
 const searchForm = ref<any>(null)
 const rules = useRules()
 const loading = ref<boolean>(null) // ローディングスピナー表示フラグ
+const checkListsForDeletion = [
+  "都道府県、市区町村を選んでバッティングセンターを探そう！",
+  "各バッティングセンターに設置されているピッチングマシン情報を共有しよう！",
+  "たまにバッティングセンター以外の施設が出てくるのはご愛嬌",
+]
 
 let city = ref<number>()
 let cities = ref<City[]>()
