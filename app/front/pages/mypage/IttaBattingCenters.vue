@@ -16,21 +16,26 @@
     </div>
     <div class="mb-3">
 			<div v-if="battingcenters.length == 0">行った！したバッティングセンターはありません</div>
-      <v-table v-else>
+      <v-table v-else class="d-flex justify-center">
         <thead>
           <tr>
-            <th class="text-left">バッティングセンター名</th>
-            <th class="text-left">所在地</th>
-            <th class="text-left">行った！数</th>
-            <th class="text-left">行った！ボタン</th>
+            <th class="text-left">バッティングセンター情報</th>
+            <th class="text-left"></th>
+            <th class="text-left"></th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="battingcenter in battingcenters"
             :key="battingcenter.place_id">
-            <td><NuxtLink :to="`/batting_centers/${battingcenter.id}`">{{ battingcenter.name }}</NuxtLink></td>
-            <td>{{ battingcenter.formatted_address }}</td>
+            <td>
+              <div class="d-flex justify-start mt-3">
+                <div><NuxtLink :to="`/batting_centers/${battingcenter.id}`">{{ battingcenter.name }}</NuxtLink></div>
+              </div>
+              <div class="d-flex justify-start mb-3">
+                <div>{{ battingcenter.formatted_address }}</div>
+              </div>
+            </td>
             <td>{{ battingcenter.itta_count }}</td>
             <td>
               <IttaButton
