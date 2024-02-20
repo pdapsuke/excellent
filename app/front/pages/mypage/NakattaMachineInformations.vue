@@ -74,12 +74,13 @@
                             batter_box: machine_information.batter_box,
                             selected_ball_speeds: useUtil().createSelectedBallSpeedsList(machine_information),
                             selected_breaking_balls: useUtil().createSelectedBreakingBallsList(machine_information),
+                            battingCenterId: batting_center.id,
                             machineId: machine_information.id})"
                             ><v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
                         </v-btn>
                       </div>
                       <div>
-                        <v-btn icon flat v-if="machine_information.is_owner==true" @click="confirmDeletion.open({machineId: machine_information.id})">
+                        <v-btn icon flat v-if="machine_information.is_owner==true" @click="confirmDeletion.open({battingCenterId: batting_center.id, machineId: machine_information.id})">
                           <v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
                         </v-btn>
                       </div>
