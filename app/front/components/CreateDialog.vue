@@ -1,10 +1,10 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="400px">
     <v-card>
-      <v-card-title>
+      <v-card-title class="my-3">
         <span class="headline">{{props.title}}</span>
       </v-card-title>
-      <v-form ref="postForm" lazy-validation>
+      <v-form ref="postForm" lazy-validation class="mx-3">
         <v-select
           v-model="selectedBallSpeeds"
           variant="outlined"
@@ -15,7 +15,7 @@
           item-value="id"
           clearable
           multiple
-          dense
+          class="mb-3"
         ></v-select>
         <v-select
           v-model="selectedBreakingBalls"
@@ -27,7 +27,7 @@
           item-value="id"
           clearable
           multiple
-          dense
+          class="mb-3"
         ></v-select>
         <v-select
           v-model="selectedBatterBox"
@@ -38,7 +38,7 @@
           item-value="value"
           :rules="[rules.required]"
           clearable
-          dense
+          class="mb-3"
         ></v-select>
       </v-form>
       <v-card-actions>
