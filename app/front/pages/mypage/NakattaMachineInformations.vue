@@ -16,8 +16,7 @@
     </div>
 		<div class="mb-3">
 			<div v-if="battingCenterAndMachines.length == 0">なかった！したマシン情報はありません</div>
-      <div class="mb-10" v-else v-for="batting_center in battingCenterAndMachines" :key=batting_center.id>
-        <NuxtLink :to="`/batting_centers/${batting_center.id}`">{{ batting_center.name }}</NuxtLink>
+      <div class="ma-10" v-else>
 				<v-table>
 					<thead>
 						<tr>
@@ -25,62 +24,70 @@
 							<th class="text-left">球種</th>
 							<th class="text-left">打席</th>
 							<th class="text-left">更新日</th>
-							<th class="text-left">あった！数</th>
-							<th class="text-left">あった！ボタン</th>
-							<th class="text-left">なかった！数</th>
-							<th class="text-left">なかった！ボタン</th>
+							<th class="text-left"></th>
+							<th class="text-left"></th>
 							<th class="text-left"></th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr
-							v-for="machine_information in batting_center.machine_informations"
-							:key="machine_information.id">
-							<td>{{ machine_information.ball_speeds.map((x) => x.speed).join(", ") }}</td>
-							<td>{{ machine_information.breaking_balls.map((x) => x.name).join(", ") }}</td>
-							<td>{{ machine_information.batter_box }}</td>
-							<td>{{ useUtil().formatDate(machine_information.updated) }}</td>
-							<td>{{ machine_information.atta_count }}</td>
-							<td>
-              <AttaButton
-                :atta="machine_information.atta"
-                @click="atta(batting_center.id, machine_information)"
-              >
-              </AttaButton>
-							</td>
-							<td>{{ machine_information.nakatta_count }}</td>
-							<td>
-              <NakattaButton
-                :nakatta="machine_information.nakatta"
-                @click="nakatta(batting_center.id, machine_information)"
-              >
-              </NakattaButton>
-							</td>
-							<td>
-							<div class="d-flex">
-								<div>
-								<v-btn icon flat v-if="machine_information.is_owner==true"
-									@click="editDialog.open({
-									ball_speeds: ballSpeeds,
-									breaking_balls: breakingBalls,
-									batter_box: machine_information.batter_box,
-									selected_ball_speeds: useUtil().createSelectedBallSpeedsList(machine_information),
-									selected_breaking_balls: useUtil().createSelectedBreakingBallsList(machine_information),
-									battingCenterId: batting_center.id,
-									machineId: machine_information.id})"
-									><v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
-								</v-btn>
-								</div>
-								<div>
-								<v-btn icon flat v-if="machine_information.is_owner==true" @click="confirmDeletion.open({
-									battingCenterId: batting_center.id,
-									machineId: machine_information.id})">
-									<v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
-								</v-btn>
-								</div>
-							</div>
-							</td>
-						</tr>
+            <template v-for="batting_center in battingCenterAndMachines" :key=batting_center.id>
+              <tr style="background: #eee;">
+                <th colspan="7" class="text-center">
+                  <NuxtLink :to="`/batting_centers/${batting_center.id}`">{{ batting_center.name }}</NuxtLink>
+                </th>
+              </tr>
+              <template v-for="machine_information in batting_center.machine_informations">
+                <tr>
+                  <td>{{ machine_information.ball_speeds.map((x) => x.speed).join(", ") }}</td>
+                  <td>{{ machine_information.breaking_balls.map((x) => x.name).join(", ") }}</td>
+                  <td>{{ machine_information.batter_box }}</td>
+                  <td>{{ useUtil().formatDate(machine_information.updated) }}</td>
+                  <td>
+                    <div class="d-flex justify-end align-center">
+                      <div>{{ machine_information.atta_count }}</div>
+                      <div>
+                        <AttaButton
+                          :atta="machine_information.atta"
+                          @click="atta(batting_center.id, machine_information)"
+                        ></AttaButton>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex justify-start align-center">
+                      <div>{{ machine_information.nakatta_count }}</div>
+                      <div>
+                        <NakattaButton
+                          :nakatta="machine_information.nakatta"
+                          @click="nakatta(batting_center.id, machine_information)"
+                        ></NakattaButton>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex justify-start">
+                      <div>
+                        <v-btn icon flat v-if="machine_information.is_owner==true"
+                          @click="editDialog.open({
+                            ball_speeds: ballSpeeds,
+                            breaking_balls: breakingBalls,
+                            batter_box: machine_information.batter_box,
+                            selected_ball_speeds: useUtil().createSelectedBallSpeedsList(machine_information),
+                            selected_breaking_balls: useUtil().createSelectedBreakingBallsList(machine_information),
+                            machineId: machine_information.id})"
+                            ><v-icon color="warning" :icon="mdiNoteEditOutline"></v-icon>
+                        </v-btn>
+                      </div>
+                      <div>
+                        <v-btn icon flat v-if="machine_information.is_owner==true" @click="confirmDeletion.open({machineId: machine_information.id})">
+                          <v-icon color="error" :icon="mdiDeleteForeverOutline"></v-icon>
+                        </v-btn>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </template>
 					</tbody>
 				</v-table>
 			</div>
