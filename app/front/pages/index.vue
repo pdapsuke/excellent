@@ -2,12 +2,13 @@
   <div>
     <Alert ref="alert" />
     <div class="mb-3">
+      <div class="text-h4 mb-5">BASSEN.comへようこそ</div>
       <v-list lines="one" class="mb-3 mx-5">
         <v-list-item
           v-for="(item, i) in checkListsForSearch"
           :key="i">
           <template v-slot:prepend>
-            <v-icon color="primary" :icon="mdiCheck"></v-icon>
+            <v-icon color="secondary" :icon="mdiCheck"></v-icon>
           </template>
           <v-list-item-title v-text="checkListsForSearch[i]"></v-list-item-title>
         </v-list-item>
@@ -48,7 +49,7 @@
         <v-col cols="12" lg="2" sm="2">
           <div>
             <v-btn
-              color="primary"
+              color="secondary"
               @click="submit"
             >検索</v-btn>
           </div>
@@ -57,7 +58,7 @@
     </div>
     <div v-if="loading==true" class="d-flex justify-center ma-5">
       <v-progress-circular
-        color="primary"
+        color="secondary"
         indeterminate
         :size="49"
         :width="7"
@@ -95,7 +96,7 @@
                 <div>{{ battingcenter.formatted_address }}</div>
               </div>
             </td>
-            <td>{{ battingcenter.itta_count }}</td>
+            <td><div class="font-weight-bold text-secondary font-italic text-h5">{{ battingcenter.itta_count }}</div></td>
             <td>
               <IttaButton
                 :itta="battingcenter.itta"

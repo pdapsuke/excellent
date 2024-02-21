@@ -35,7 +35,7 @@
     message="本当に削除しますか"
     confirmBtn="削除"
     cancelBtn="キャンセル"
-    colorCancel="primary"
+    colorCancel="black"
     colorConfirm="error"
     ref="confirmDeletion"
     @confirm="handleDeleteUser">

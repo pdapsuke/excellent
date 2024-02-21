@@ -44,7 +44,7 @@
                   <td>{{ useUtil().formatDate(machine_information.updated) }}</td>
                   <td>
                     <div class="d-flex justify-end align-center">
-                      <div>{{ machine_information.atta_count }}</div>
+                      <div class="font-weight-bold text-secondary font-italic text-h6">{{ machine_information.atta_count }}</div>
                       <div>
                         <AttaButton
                           :atta="machine_information.atta"
@@ -55,7 +55,7 @@
                   </td>
                   <td>
                     <div class="d-flex justify-start align-center">
-                      <div>{{ machine_information.nakatta_count }}</div>
+                      <div class="font-weight-bold text-secondary font-italic text-h6">{{ machine_information.nakatta_count }}</div>
                       <div>
                         <NakattaButton
                           :nakatta="machine_information.nakatta"
@@ -99,7 +99,7 @@
       message="本当に削除しますか"
       confirmBtn="削除"
       cancelBtn="キャンセル"
-      colorCancel="primary"
+      colorCancel="black"
       colorConfirm="error"
       ref="confirmDeletion"
       @confirm="deleteMachineInformation">
@@ -109,7 +109,7 @@
       title="マシン情報の編集"
       confirmBtn="OK"
       cancelBtn="キャンセル"
-      colorCancel="primary"
+      colorCancel="black"
       colorConfirm="error"
       ref="editDialog"
       @confirm="editMachineInformation">

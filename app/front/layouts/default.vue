@@ -16,7 +16,7 @@
       <!-- プロフィール -->
       <v-sheet color="grey-lighten-4" class="pa-4" >
         <v-avatar class="mb-4" color="accent" size="64" >SA</v-avatar>
-        <div>sample.app</div>
+        <div>BASSEN.com</div>
       </v-sheet>
       <!-- プロフィール -->
       <v-divider></v-divider>
@@ -45,7 +45,7 @@
 
     <!-- フッター >>> -->
     <v-footer class="footer justify-center">
-      <div>&copy; 2023 Nuxt tutorial</div>
+      <div>&copy; 2023 Bassen.com</div>
     </v-footer>
     <!-- <<< フッター -->
   </v-app>

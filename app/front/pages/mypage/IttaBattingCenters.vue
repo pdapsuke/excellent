@@ -36,7 +36,7 @@
                 <div>{{ battingcenter.formatted_address }}</div>
               </div>
             </td>
-            <td>{{ battingcenter.itta_count }}</td>
+            <td><div class="font-weight-bold text-secondary font-italic text-h5">{{ battingcenter.itta_count }}</div></td>
             <td>
               <IttaButton
                 :itta="battingcenter.itta"

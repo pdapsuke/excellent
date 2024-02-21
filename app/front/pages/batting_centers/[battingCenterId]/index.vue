@@ -4,7 +4,7 @@
     <div class="mb-3">
       <div class="d-flex align-center mb-2">
         <div class="text-h4 mr-13">{{ detail.name }}</div>
-        <div class="text-h4 font-italic mr-3">{{ detail.itta_count }}</div>
+        <div class="font-weight-bold text-secondary text-h4 font-italic mr-3">{{ detail.itta_count }}</div>
         <div class="me-auto"><IttaButton :itta="detail.itta" @click="itta(detail)"></IttaButton></div>
         <div class="mr-5"><NuxtLink :to="`/`">検索画面に戻る</NuxtLink></div>
       </div>
@@ -36,7 +36,7 @@
                 v-for="(item, i) in checkListsForPost"
                 :key="i">
                 <template v-slot:prepend>
-                  <v-icon color="primary" :icon="mdiCheck"></v-icon>
+                  <v-icon color="secondary" :icon="mdiCheck"></v-icon>
                 </template>
                 <v-list-item-title v-text="checkListsForPost[i]"></v-list-item-title>
               </v-list-item>
@@ -74,7 +74,7 @@
             <td>{{ useUtil().formatDate(machine_information.updated) }}</td>
             <td>
               <div class="d-flex justify-end align-center">
-                <div>{{ machine_information.atta_count }}</div>
+                <div class="font-weight-bold text-secondary font-italic text-h6">{{ machine_information.atta_count }}</div>
                 <div>
                   <AttaButton
                     :atta="machine_information.atta"
@@ -85,7 +85,7 @@
             </td>
             <td>
               <div class="d-flex justify-start align-center">
-                <div>{{ machine_information.nakatta_count }}</div>
+                <div class="font-weight-bold text-secondary font-italic text-h6">{{ machine_information.nakatta_count }}</div>
                 <div>
                   <NakattaButton
                     :nakatta="machine_information.nakatta"
@@ -125,7 +125,7 @@
       message="本当に削除しますか"
       confirmBtn="削除"
       cancelBtn="キャンセル"
-      colorCancel="primary"
+      colorCancel="black"
       colorConfirm="error"
       ref="confirmDeletion"
       @confirm="deleteMachineInformation">
@@ -135,7 +135,7 @@
       title="マシン情報の新規投稿"
       confirmBtn="投稿"
       cancelBtn="キャンセル"
-      colorCancel="primary"
+      colorCancel="black"
       colorConfirm="error"
       ref="createDialog"
       @confirm="createMachineInformation">
@@ -145,7 +145,7 @@
       title="マシン情報の編集"
       confirmBtn="OK"
       cancelBtn="キャンセル"
-      colorCancel="primary"
+      colorCancel="black"
       colorConfirm="error"
       ref="editDialog"
       @confirm="editMachineInformation">
