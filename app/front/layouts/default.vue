@@ -4,21 +4,15 @@
     <v-app-bar color="primary" :elevation="2">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-app-bar-title>
-        <div @click="useRouter().push('/')" style="cursor: pointer;">SampleApp</div>
+        <div @click="useRouter().push('/')" class="font-weight-bold font-italic text-h5" style="cursor: pointer;">BASSEN.com</div>
       </v-app-bar-title>
-      <div v-if="auth.authenticated()">ようこそ、{{ username }}さん</div>
+      <div v-if="auth.authenticated()">ようこそ、{{ useAuth().getUsername() }}さん</div>
       <v-btn v-if="auth.authenticated()" :icon="mdiLogout" @click="logout()"></v-btn>
     </v-app-bar>
     <!-- <<< ヘッダー -->
 
     <!-- サイドメニュー >>> -->
     <v-navigation-drawer v-model="drawer">
-      <!-- プロフィール -->
-      <v-sheet color="grey-lighten-4" class="pa-4" >
-        <v-avatar class="mb-4" color="accent" size="64" >SA</v-avatar>
-        <div>BASSEN.com</div>
-      </v-sheet>
-      <!-- プロフィール -->
       <v-divider></v-divider>
       <!-- メニューリスト >>> -->
       <v-list>
@@ -52,11 +46,10 @@
 </template>
 
 <script setup lang="ts">
-import { mdiAccount, mdiNote, mdiLogout, mdiLogin, mdiInformation } from '@mdi/js'
+import { mdiAccount, mdiMapSearchOutline, mdiLogout } from '@mdi/js'
 import { Auth } from 'aws-amplify'
 
 const auth = useAuth()
-const username = useAuth().getUsername<string>()
 
 interface MenuItem {
   icon: string
@@ -67,19 +60,14 @@ interface MenuItem {
 const drawer = ref<boolean>(false)
 const menu = ref<Array<MenuItem>>([
   {
-    icon: mdiLogin,
-    name: "Login",
-    path: "/login",
-  },
-  {
-    icon: mdiNote,
-    name: "Item",
-    path: "/items/",
-  },
-  {
     icon: mdiAccount,
-    name: "User",
-    path: "/users/",
+    name: "Mypage",
+    path: "/mypage/IttaBattingCenters",
+  },
+  {
+    icon: mdiMapSearchOutline,
+    name: "Search",
+    path: "/",
   },
 ])
 
