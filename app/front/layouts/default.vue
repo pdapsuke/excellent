@@ -12,7 +12,7 @@
     <!-- <<< ヘッダー -->
 
     <!-- サイドメニュー >>> -->
-    <v-navigation-drawer v-model="drawer">
+    <v-navigation-drawer v-if="auth.authenticated()" v-model="drawer">
       <v-divider></v-divider>
       <!-- メニューリスト >>> -->
       <v-list>
