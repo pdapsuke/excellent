@@ -8,10 +8,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
-  "devDependencies": {
+  "dependencies": {
     "@mdi/js": "^7.2.96",
-    "@nuxt/devtools": "latest",
-    "@types/node": "^18",
     "aws-amplify": "^5.3.11",
     "nuxt": "^3.6.0",
     "sass": "^1.63.6",
@@ -19,5 +17,9 @@
     "vite-plugin-vuetify": "^1.0.2",
     "vue3-carousel-nuxt": "^1.1.0",
     "vuetify": "^3.3.5"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@types/node": "^18"
   }
 }
