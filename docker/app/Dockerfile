@@ -24,7 +24,7 @@ RUN echo "source ~/.private_bashrc" >> /home/app/.bashrc
 RUN pip install supervisor
 
 # install nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
 
 # Pythonライブラリインストール
 COPY requirements.txt .
