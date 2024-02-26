@@ -1,4 +1,4 @@
-FROM python:3.8.12-slim-bullseye
+FROM python:3.11-slim-bullseye
 
 ARG host_uid
 ARG host_gid
