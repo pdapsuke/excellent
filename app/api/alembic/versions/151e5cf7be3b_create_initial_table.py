@@ -36,7 +36,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_ball_speeds_id'), 'ball_speeds', ['id'], unique=False)
 
     # ball_speedsテーブルに初期データを登録（50～180を間隔5で登録）
-    ball_speeds = list(range(50, 181, 5))
+    ball_speeds = list(range(50, 161, 10))
     for i, ball_speed in enumerate(ball_speeds):
         op.bulk_insert(ball_speeds_table, [
             {
