@@ -6,3 +6,4 @@ pytest
 requests
 fastapi-cloudauth
 pyjwt[crypto]
+boto3

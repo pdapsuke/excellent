@@ -1,10 +1,14 @@
+import enum
+
 from pydantic_settings import BaseSettings
 
+class Mode(str, enum.Enum):
+    PRD = "prd"
+    STG = "stg"
+    DEV = "dev"
+    LOCAL = "local"
+
 class Environment(BaseSettings):
-    db_user: str
-    db_password: str
-    db_port: str
-    db_host: str
     db_name: str
     aws_region: str
     cognito_userpool_id: str
@@ -13,3 +17,5 @@ class Environment(BaseSettings):
     place_details_url: str
     find_place_api_key: str
     photo_reference_url: str
+    mode: Mode
+    db_secret_name: str

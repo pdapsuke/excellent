@@ -32,19 +32,20 @@ PROJECT_ROOT="$(cd $(dirname $0)/..; pwd)"
 cd "$PROJECT_ROOT"
 
 ENV_PATH="${PROJECT_ROOT}/local.env"
-MODE="app"
+RUN_MODE="app"
 USER_ID=$(id -u)
 GROUP_ID=$(id -g)
 while [ "$#" != 0 ]; do
   case $1 in
     -h | --help   ) usage;;
-    -m | --mode   ) shift; MODE=$1;;
+    -m | --mode   ) shift; RUN_MODE=$1;;
+    -e | --env    ) shift; ENV_PATH=$1;;
     -* | --*      ) echo "$1 : 不正なオプションです" >&2; exit 1;;
   esac
   shift
 done
 
-if [ "$MODE" != "app" -a "$MODE" != "shell" ]; then
+if [ "$RUN_MODE" != "app" -a "$RUN_MODE" != "shell" ]; then
   echo "--mode には app, shellのいずれかを指定してください" >&2
   exit 1
 fi
@@ -61,7 +62,7 @@ docker build \
   -t excellent-app:latest \
   .
 
-if [ "$MODE" = "shell" ]; then
+if [ "$RUN_MODE" = "shell" ]; then
   CMD="/bin/bash"
 else
   CMD="supervisord -c /etc/supervisor/supervisord.conf"
