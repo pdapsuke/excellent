@@ -58,7 +58,7 @@ docker build \
   --build-arg host_uid=$USER_ID \
   --build-arg host_gid=$GROUP_ID \
   --rm \
-  -f docker/app/Dockerfile \
+  -f docker/dev/Dockerfile \
   -t excellent-app:latest \
   .
 
