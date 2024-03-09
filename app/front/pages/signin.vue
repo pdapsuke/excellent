@@ -7,7 +7,7 @@
       <v-card class="pa-5">
         <v-card-title class="d-flex justify-center mb-3">
           <div>
-            <v-img :src="`/assets/logo.png`" contain height="200"></v-img>
+            <v-img :src="imgUrl" contain height="200"></v-img>
           </div>
         </v-card-title>
         <v-form ref="loginForm" lazy-validation>
@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
 import { Auth } from 'aws-amplify';
+import imgUrl from '@/assets/logo.png';
 
 // テキストフィールドにバインドされるデータ
 const username = ref<string>("")
