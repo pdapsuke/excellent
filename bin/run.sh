@@ -52,33 +52,43 @@ fi
 
 export $(cat $ENV_PATH | grep -v -e "^ *#")
 
-# Docker build
+# Docker build app server
 export DOCKER_BUILDKIT=1
 docker build \
   --build-arg host_uid=$USER_ID \
   --build-arg host_gid=$GROUP_ID \
   --rm \
   -f docker/dev/Dockerfile \
-  -t excellent-app:latest \
+  -t excellent-app-dev:latest \
   .
 
-if [ "$RUN_MODE" = "shell" ]; then
-  CMD="/bin/bash"
-else
-  CMD="supervisord -c /etc/supervisor/supervisord.conf"
-fi
-
-# Docker run
-LOCAL_APP_DIR="${PROJECT_ROOT}/app"
-echo $CMD
-docker run \
+docker build \
+  --build-arg host_uid=$USER_ID \
+  --build-arg host_gid=$GROUP_ID \
   --rm \
-  -ti \
-  --network host \
-  --env-file "$ENV_PATH" \
-  -e "DB_NAME=$DB_NAME" \
-  -w /opt/app \
-  --user="$USER_ID:$GROUP_ID" \
-  -v ${LOCAL_APP_DIR}:/opt/app \
-  excellent-app:latest \
-  $CMD
+  -f docker/nginx/Dockerfile \
+  -t excellent-nginx-dev:latest \
+  .
+
+LOCAL_APP_DIR="${PROJECT_ROOT}/app"
+
+export LOCAL_APP_DIR="$LOCAL_APP_DIR"
+export ENV_PATH="$ENV_PATH"
+
+if [ "$RUN_MODE" = "shell" ]; then
+  docker run \
+    --rm \
+    -ti \
+    --network host \
+    --env-file "$ENV_PATH" \
+    -e "DB_NAME=$DB_NAME" \
+    -w /opt/app \
+    --user="$USER_ID:$GROUP_ID" \
+    -v ${LOCAL_APP_DIR}:/opt/app \
+    excellent-app-dev:latest \
+    "/bin/bash"
+else
+  cd "${PROJECT_ROOT}/docker"
+  docker-compose -f docker-compose.yml down
+  docker-compose -f docker-compose.yml up
+fi

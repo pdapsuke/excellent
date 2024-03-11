@@ -38,3 +38,5 @@ RUN chmod +x /entrypoint-*.sh
 
 # importの起点となるパスを環境変数として定義
 ENV PYTHONPATH=/opt/app
+
+CMD ["/usr/local/bin/supervisord","--configuration=/etc/supervisor/supervisord.conf"]

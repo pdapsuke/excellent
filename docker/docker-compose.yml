@@ -1,0 +1,16 @@
+version: '3.2'
+services:
+  app:
+    image: excellent-app-dev:latest
+    container_name: excellent-app-dev
+    volumes:
+      - type: bind
+        source: "${LOCAL_APP_DIR}"
+        target: /opt/app
+    env_file:
+      - "${ENV_PATH}"
+    network_mode: host
+  nginx:
+    image: excellent-nginx-dev:latest
+    container_name: nginx-dev
+    network_mode: host  
