@@ -14,11 +14,13 @@
             <v-text-field
               v-model="username"
               label="Username"
-              :rules="[rules.required]"
+              hint="使える文字は、a～z, A～Z, 0～9, および特殊文字 (+ = , . @ -) です。"
+              :rules="[rules.required, rules.userNameValidate]"
             ></v-text-field>
             <v-text-field
               v-model="email"
               label="Email"
+              hint="@verificationemail.comからの受信が許可されているか確認してください。"
               :rules="[rules.emailValidate]"
             ></v-text-field>
             <v-text-field

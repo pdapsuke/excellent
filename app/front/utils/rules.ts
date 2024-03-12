@@ -20,6 +20,13 @@ class ValidationRules {
     return (v && passwordRegex.test(v)) || "8文字以上, 少なくとも一つの数字, 大文字・小文字アルファベット, 次の特殊文字(^ $ * . [ ] { } ( ) ? - \" ! @ # % & / \\ , > < ' : ; | _ ~ ` + =)を含めてください。"
   }
 
+  // ユーザネームのバリデーション
+  // 使える文字は、a～z, A～Z, 0～9, および特殊文字 (+ = , . @ -)
+  public static userNameValidate(v: string) {
+    const userNameRegex = /^(?=.*[a-zA-Z0-9+,\.@-]).{1,}$/
+    return (v && userNameRegex.test(v)) || "使える文字は、a～z, A～Z, 0～9, および特殊文字 (+ = , . @ -) です。"
+  }
+
   // Eメールアドレス形式のバリデーション
   public static emailValidate(v: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
