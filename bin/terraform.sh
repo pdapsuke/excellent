@@ -59,4 +59,4 @@ docker run -ti --rm \
   -w /terraform/envs/$STAGE \
   -v ${PROJECT_ROOT}/terraform:/terraform \
   excellent-terraform:latest \
-  ${TERRAFORM_ARGS[@]} \
+  ${TERRAFORM_ARGS[@]}

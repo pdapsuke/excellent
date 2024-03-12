@@ -33,12 +33,24 @@ AWS_REGION="ap-northeast-1"
 
 
 # イメージビルド
-docker build --rm -f docker/app/Dockerfile -t ${REPOSITORY_NAME}:latest .
+docker build --rm -f docker/front/Dockerfile -t ${REPOSITORY_NAME}-front:latest .
+docker build --rm -f docker/api/Dockerfile -t ${REPOSITORY_NAME}-api:latest .
+docker build --rm -f docker/nginx/Dockerfile -t ${REPOSITORY_NAME}-nginx:latest .
 
 # ECRにログイン
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-# ECRにイメージをpush
-REMOTE_REPOSITORY_NAME=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPOSITORY_NAME}:latest
-docker tag ${REPOSITORY_NAME}:latest $REMOTE_REPOSITORY_NAME
-docker push $REMOTE_REPOSITORY_NAME
+# ECRにフロントイメージをpush
+REMOTE_REPOSITORY_NAME_FRONT=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPOSITORY_NAME}-front:latest
+docker tag ${REPOSITORY_NAME}-front:latest $REMOTE_REPOSITORY_NAME_FRONT
+docker push $REMOTE_REPOSITORY_NAME_FRONT
+
+# ECRにapiイメージをpush
+REMOTE_REPOSITORY_NAME_API=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPOSITORY_NAME}-api:latest
+docker tag ${REPOSITORY_NAME}-api:latest $REMOTE_REPOSITORY_NAME_API
+docker push $REMOTE_REPOSITORY_NAME_API
+
+# ECRにnginxイメージをpush
+REMOTE_REPOSITORY_NAME_NGINX=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPOSITORY_NAME}-nginx:latest
+docker tag ${REPOSITORY_NAME}-nginx:latest $REMOTE_REPOSITORY_NAME_NGINX
+docker push $REMOTE_REPOSITORY_NAME_NGINX

@@ -9,21 +9,16 @@ RUN echo 'ja_JP.UTF-8 UTF-8' >> /etc/locale.gen && \
     update-locale LANG=ja_JP.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
-# supervisorインストール
-RUN pip install supervisor
-
-# install nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
-
 # Pythonライブラリインストール
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# supervisorの設定ファイルとエントリーポイント
-COPY docker/app/supervisor /etc/supervisor
-COPY docker/app/entrypoint-api.sh /entrypoint-api.sh
-COPY docker/app/entrypoint-front.sh /entrypoint-front.sh
-RUN chmod +x /entrypoint-*.sh
+# アプリのソースコード
+COPY app /opt/app
 
 # importの起点となるパスを環境変数として定義
 ENV PYTHONPATH=/opt/app
+
+COPY docker/api/entrypoint-api.sh /entrypoint-api.sh
+RUN chmod +x /entrypoint*.sh
+CMD ["/entrypoint-api.sh"]
