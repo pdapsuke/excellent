@@ -59,6 +59,7 @@ variable "nginx_app_image_uri" { type = string }
 variable "public_subnets" { type = list(string) }
 variable "hostzone_id" { type = string }
 variable "hostzone_name" { type = string }
+variable "certificate_arn" { type = string }
 
 output "db_secrets_manager_arn" {
   value = module.db.db_secrets_manager_arn
@@ -96,6 +97,7 @@ module "app" {
   ingress_cidr_blocks = [local.vpc_cidr_block]
   app_alb_arn         = module.alb.app_alb.arn
   sns_topic_arn       = module.base.sns_topic_arn
+  certificate_arn     = var.certificate_arn
   env = {
     "MODE" : local.stage,
     "SNS_ARN" : module.base.sns_topic_arn,
@@ -108,7 +110,7 @@ module "app" {
     "FIND_PLACE_API_KEY" : "***REMOVED***",
     "PHOTO_REFERENCE_URL" : "https://maps.googleapis.com/maps/api/place/photo",
     "AWS_REGION" : "ap-northeast-1"
-    "NUXT_CLIENT_BASE_URL" : "http://${module.route53_record.route53_record.name}/api/v1"
+    "NUXT_CLIENT_BASE_URL" : "https://${module.route53_record.route53_record.name}/api/v1"
   }
 }
 
