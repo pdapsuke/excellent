@@ -148,10 +148,10 @@ resource "aws_ecs_task_definition" "app_task_definition" {
   //   container_definitions で定義したコンテナのCPUとメモリの合計値を指定メモリ
   //   cpuとmemoryの値にはペアがあるので注意
   //   - https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
-  cpu    = 8192
-  memory = 16384
+  cpu    = 4096
+  memory = 8192
 
-  // ネットワークモード:
+  // ネットワークモード
   network_mode = "awsvpc"
 
   // ランタイムプラットフォーム: コンテナのホストOSの情報
@@ -176,8 +176,8 @@ resource "aws_ecs_task_definition" "app_task_definition" {
     {
       name      = local.front_container_name  // フロントエンドのコンテナ
       image     = "${var.front_app_image_uri}:latest"
-      cpu       = 4096
-      memory    = 6144
+      cpu       = 2048
+      memory    = 3072
       essential = true // essential=Trueのコンテナが停止した場合、タスク全体が停止する
       // 80番ポートをホストにマッピング
       portMappings = [
@@ -212,8 +212,8 @@ resource "aws_ecs_task_definition" "app_task_definition" {
     {
       name      = local.api_container_name // バックエンドのコンテナ
       image     = "${var.api_app_image_uri}:latest"
-      cpu       = 2048
-      memory    = 6144
+      cpu       = 1024
+      memory    = 3072
       essential = true
       portMappings = [
         {
@@ -241,8 +241,8 @@ resource "aws_ecs_task_definition" "app_task_definition" {
     {
       name      = local.nginx_container_name  // nginxのコンテナ
       image     = "${var.nginx_app_image_uri}:latest"
-      cpu       = 2048
-      memory    = 4096
+      cpu       = 1024
+      memory    = 2048
       essential = true
       portMappings = [
         {
