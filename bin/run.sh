@@ -51,8 +51,9 @@ build_image() {
 }
 
 export DOCKER_BUILDKIT=1
-build_image "docker/dev/Dockerfile" "excellent-app-dev:latest"
-build_image "docker/nginx/Dockerfile" "excellent-nginx-dev:latest"
+build_image "docker/front-dev/Dockerfile" "excellent-app-front-dev:latest" # フロントは開発用コンテナをビルドする
+build_image "docker/api/Dockerfile" "excellent-app-api:latest"
+build_image "docker/nginx/Dockerfile" "excellent-app-nginx:latest"
 
 LOCAL_APP_DIR="${PROJECT_ROOT}/app"
 

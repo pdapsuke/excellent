@@ -1,8 +1,19 @@
 version: '3.2'
 services:
-  app:
-    image: excellent-app-dev:latest
-    container_name: excellent-app-dev
+  front:
+    image: excellent-app-front-dev:latest
+    container_name: excellent-app-front-dev
+    volumes:
+      - type: bind
+        source: "${LOCAL_APP_DIR}"
+        target: /opt/app
+    env_file:
+      - "${ENV_PATH}"
+    network_mode: host
+    command: /entrypoint-front-dev.sh
+  api:
+    image: excellent-app-api:latest
+    container_name: excellent-app-api
     volumes:
       - type: bind
         source: "${LOCAL_APP_DIR}"
@@ -11,6 +22,6 @@ services:
       - "${ENV_PATH}"
     network_mode: host
   nginx:
-    image: excellent-nginx-dev:latest
-    container_name: nginx-dev
-    network_mode: host  
+    image: excellent-app-nginx:latest
+    container_name: excellent-app-nginx
+    network_mode: host
