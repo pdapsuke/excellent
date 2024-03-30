@@ -1,20 +1,13 @@
-FROM python:3.11-slim-bullseye
-
-RUN apt update && \
-    apt install -y locales curl default-mysql-client less vim net-tools iputils-ping sudo
-
-# ロケール設定
-RUN echo 'ja_JP.UTF-8 UTF-8' >> /etc/locale.gen && \
-    locale-gen && \
-    update-locale LANG=ja_JP.UTF-8
-RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
-
-# install nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
+FROM node:20-bookworm-slim
 
 # アプリのソースコード
-COPY app /opt/app
+COPY app/front /opt/app/front
 
 COPY docker/front/entrypoint-front.sh /entrypoint-front.sh
 RUN chmod +x /entrypoint*.sh
+
+RUN cd /opt/app/front &&\
+    npm install &&\
+    npm run build
+
 CMD ["/entrypoint-front.sh"]
