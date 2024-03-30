@@ -17,26 +17,14 @@ RUN groupadd -g $host_gid app && \
     useradd -u $host_uid -o -m -g $host_gid -s /bin/bash app && \
     echo "app ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/app
 
-COPY docker/dev/.private_bashrc /home/app/.private_bashrc
+COPY docker/shell/.private_bashrc /home/app/.private_bashrc
 RUN echo "source ~/.private_bashrc" >> /home/app/.bashrc
-
-# supervisorインストール
-RUN pip install supervisor
-
-# install nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
 
 # Pythonライブラリインストール
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# supervisorの設定ファイルとエントリーポイント
-COPY docker/dev/supervisor /etc/supervisor
-COPY docker/dev/entrypoint-api.sh /entrypoint-api.sh
-COPY docker/dev/entrypoint-front.sh /entrypoint-front.sh
-RUN chmod +x /entrypoint-*.sh
-
 # importの起点となるパスを環境変数として定義
 ENV PYTHONPATH=/opt/app
 
-CMD ["/usr/local/bin/supervisord","--configuration=/etc/supervisor/supervisord.conf"]
+CMD ["/bin/bash"]
