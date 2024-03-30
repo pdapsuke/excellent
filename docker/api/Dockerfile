@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11-slim-bookworm
 
 RUN apt update && \
     apt install -y locales curl default-mysql-client less vim net-tools iputils-ping sudo
