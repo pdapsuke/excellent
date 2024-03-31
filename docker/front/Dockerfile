@@ -7,7 +7,6 @@ COPY docker/front/entrypoint-front.sh /entrypoint-front.sh
 RUN chmod +x /entrypoint*.sh
 
 RUN cd /opt/app/front &&\
-    npm install &&\
-    npm run build
+    npm install
 
 CMD ["/entrypoint-front.sh"]
