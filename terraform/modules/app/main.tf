@@ -186,11 +186,16 @@ resource "aws_ecs_task_definition" "app_task_definition" {
           hostPort      = 3000
         }
       ]
-      // コンテナの環境変数
       environment = [
-        for k, v in var.env : {
+        for k, v in var.env_front : {
           name  = k
           value = v
+        }
+      ]
+      secrets     = [
+        for k, v in var.secrets_front : {
+          name  = k
+          valueFrom = v
         }
       ]
       // コンテナの起動コマンド
@@ -222,9 +227,15 @@ resource "aws_ecs_task_definition" "app_task_definition" {
         }
       ]
       environment = [
-        for k, v in var.env : {
+        for k, v in var.env_api : {
           name  = k
           value = v
+        }
+      ]
+      secrets     = [
+        for k, v in var.secrets_api : {
+          name  = k
+          valueFrom = v
         }
       ]
       # command = ["/entrypoint-api.sh"]

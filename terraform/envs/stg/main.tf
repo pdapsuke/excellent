@@ -41,18 +41,17 @@ data "aws_region" "current" {}
 
 // ローカル変数を定義
 locals {
-  aws_region     = data.aws_region.current.name
-  account_id     = data.aws_caller_identity.self.account_id
-  app_name       = replace(lower("excellent"), "-", "")
-  stage          = "stg"
-  vpc_cidr_block = "192.168.0.0/16"
+  aws_region                  = data.aws_region.current.name
+  account_id                  = data.aws_caller_identity.self.account_id
+  app_name                    = replace(lower("excellent"), "-", "")
+  stage                       = "stg"
+  vpc_cidr_block              = "192.168.0.0/16"
+  nuxt_client_base_url_suffix = "://${module.route53_record.route53_record.name}/api/v1"
 }
 
 // 変数定義
 variable "vpc_id" { type = string }
 variable "private_subnets" { type = list(string) }
-variable "db_user" { type = string }
-variable "db_password" { type = string }
 variable "front_app_image_uri" { type = string }
 variable "api_app_image_uri" { type = string }
 variable "nginx_app_image_uri" { type = string }
@@ -60,9 +59,21 @@ variable "public_subnets" { type = list(string) }
 variable "hostzone_id" { type = string }
 variable "hostzone_name" { type = string }
 variable "certificate_arn" { type = string }
+variable "db_user" { type = string }
+variable "db_password" { type = string }
+variable "cognito_userool_id" { type = string }
+variable "cognito_client_id" { type = string }
+variable "find_place_url" { type = string }
+variable "place_details_url" { type = string }
+variable "find_place_api_key" { type = string }
+variable "photo_reference_url" { type = string }
+
+output "env_secrets_manager_arn" {
+  value = module.secrets.env_secrets_manager_arn
+}
 
 output "db_secrets_manager_arn" {
-  value = module.db.db_secrets_manager_arn
+  value = module.secrets.db_secrets_manager_arn
 }
 
 module "base" {
@@ -98,19 +109,27 @@ module "app" {
   app_alb_arn         = module.alb.app_alb.arn
   sns_topic_arn       = module.base.sns_topic_arn
   certificate_arn     = var.certificate_arn
-  env = {
+  env_api = {
     "MODE" : local.stage,
-    "SNS_ARN" : module.base.sns_topic_arn,
     "DB_NAME" : local.stage,
     "DB_SECRET_NAME" : "/${local.app_name}/${local.stage}/db",
-    "COGNITO_USERPOOL_ID" : "***REMOVED***",
-    "COGNITO_CLIENT_ID" : "***REMOVED***",
-    "FIND_PLACE_URL" : "https://maps.googleapis.com/maps/api/place/textsearch/json",
-    "PLACE_DETAILS_URL" : "https://maps.googleapis.com/maps/api/place/details/json",
-    "FIND_PLACE_API_KEY" : "***REMOVED***",
-    "PHOTO_REFERENCE_URL" : "https://maps.googleapis.com/maps/api/place/photo",
-    "AWS_REGION" : "ap-northeast-1"
-    "NUXT_CLIENT_BASE_URL" : "https://${module.route53_record.route53_record.name}/api/v1"
+    "AWS_REGION" : local.aws_region,
+  }
+  env_front = {
+    "AWS_REGION" : local.aws_region,
+    "NUXT_CLIENT_BASE_URL" : length(var.certificate_arn) > 0 ? "https${local.nuxt_client_base_url_suffix}" : "http${local.nuxt_client_base_url_suffix}"
+  }
+  secrets_api = {
+    "COGNITO_USERPOOL_ID" : "${module.secrets.env_secrets_manager_arn}:cognito_userool_id::",
+    "COGNITO_CLIENT_ID" : "${module.secrets.env_secrets_manager_arn}:cognito_client_id::",
+    "FIND_PLACE_URL" : "${module.secrets.env_secrets_manager_arn}:find_place_url::",
+    "PLACE_DETAILS_URL" : "${module.secrets.env_secrets_manager_arn}:place_details_url::",
+    "FIND_PLACE_API_KEY" : "${module.secrets.env_secrets_manager_arn}:find_place_api_key::",
+    "PHOTO_REFERENCE_URL" : "${module.secrets.env_secrets_manager_arn}:photo_reference_url::",
+  }
+  secrets_front = {
+    "COGNITO_USERPOOL_ID" : "${module.secrets.env_secrets_manager_arn}:cognito_userool_id::",
+    "COGNITO_CLIENT_ID" : "${module.secrets.env_secrets_manager_arn}:cognito_client_id::",
   }
 }
 
@@ -129,4 +148,20 @@ module "route53_record" {
   hostzone_name = var.hostzone_name
   lb_zone_id    = module.alb.app_alb.zone_id
   lb_zone_name  = module.alb.app_alb.dns_name
+}
+
+module "secrets" {
+  source              = "../../modules/secrets"
+  app_name            = local.app_name
+  stage               = local.stage
+  cognito_userool_id  = var.cognito_userool_id
+  cognito_client_id   = var.cognito_client_id
+  find_place_url      = var.find_place_url
+  place_details_url   = var.place_details_url
+  find_place_api_key  = var.find_place_api_key
+  photo_reference_url = var.photo_reference_url
+  db_user             = var.db_user
+  db_password         = var.db_password
+  db_host             = module.db.aurora_serverless_mysql80.endpoint
+  db_port             = module.db.aurora_serverless_mysql80.port
 }

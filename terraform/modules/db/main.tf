@@ -115,20 +115,3 @@ resource "aws_rds_cluster_instance" "aurora_serverless_mysql80" {
   // パブリックアクセス不可
   publicly_accessible = false
 }
-
-// DBのログイン情報をsecrests managerで保持
-resource "aws_secretsmanager_secret" "aurora_serverless_mysql80" {
-  name                           = "/${var.app_name}/${var.stage}/db"
-  recovery_window_in_days        = 0
-  force_overwrite_replica_secret = true
-}
-
-resource "aws_secretsmanager_secret_version" "aurora_serverless_mysql80" {
-  secret_id = aws_secretsmanager_secret.aurora_serverless_mysql80.id
-  secret_string = jsonencode({
-    db_user     = var.db_user
-    db_password = var.db_password
-    db_host     = aws_rds_cluster.aurora_serverless_mysql80.endpoint
-    db_port     = aws_rds_cluster.aurora_serverless_mysql80.port
-  })
-}

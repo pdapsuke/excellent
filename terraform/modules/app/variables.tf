@@ -22,8 +22,17 @@ variable "ingress_cidr_blocks" {
   type = list(string)
 }
 
-// コンテナの環境変数
-variable "env" { type = map(any) }
+// apiコンテナの環境変数
+variable "env_api" { type = map(any) }
+
+// frontコンテナの環境変数
+variable "env_front" { type = map(any) }
+
+// apiコンテナのsecret
+variable "secrets_api" { type = map(any) }
+
+// frontコンテナのsecret
+variable "secrets_front" { type = map(any) }
 
 // snsのトピックARN
 variable "sns_topic_arn" {}
