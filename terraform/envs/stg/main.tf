@@ -165,3 +165,12 @@ module "secrets" {
   db_host             = module.db.aurora_serverless_mysql80.endpoint
   db_port             = module.db.aurora_serverless_mysql80.port
 }
+
+module "monitoring" {
+  source              = "../../modules/monitoring"
+  app_name            = local.app_name
+  stage               = local.stage
+  app_tg_1_arn_suffix = module.app.tg_1.arn_suffix
+  ecs_cluster_name    = module.app.ecs_cluster_name
+  ecs_service_name    = module.app.ecs_service_name
+}
