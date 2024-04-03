@@ -19,8 +19,8 @@ resource "aws_rds_cluster" "aurora_serverless_mysql80" {
 
   // スケールアップ/ダウン時の最小ACU, 最大ACUを定義
   serverlessv2_scaling_configuration {
-    min_capacity = 0.5 // 0.5 ~
-    max_capacity = 1.0 // ~ 128
+    min_capacity = 0.5
+    max_capacity = 1.0
   }
 
   // 削除時にスナップショットを作成しない
@@ -105,8 +105,7 @@ resource "aws_security_group" "aurora_serverless_mysql80" {
 resource "aws_rds_cluster_instance" "aurora_serverless_mysql80" {
   count              = var.instance_num
   cluster_identifier = aws_rds_cluster.aurora_serverless_mysql80.id
-  // Aurora Serverless V2を利用する場合は db.serverless 固定
-  instance_class = "db.serverless"
+  instance_class = "db.serverless" // Aurora Serverless V2を利用する場合は db.serverless 固定
   engine         = aws_rds_cluster.aurora_serverless_mysql80.engine
   engine_version = aws_rds_cluster.aurora_serverless_mysql80.engine_version
 

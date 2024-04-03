@@ -1,8 +1,3 @@
-/**
- * ALBターゲットグループ
- * aws_lb_target_group: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group
- */
-
 // 本番用リスナーにアタッチするターゲットグループ
 resource "aws_lb_target_group" "app_tg_1" {
   name        = "${var.app_name}-${var.stage}-app-tg-1"
@@ -16,14 +11,9 @@ resource "aws_lb_target_group" "app_tg_1" {
   }
 }
 
-/**
- * ALBのリスナー (HTTPS を利用する場合)
- * aws_lb_listener: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
- */
-// HTTPS:443 本番用リスナー (Green)
+// HTTPS:443 本番用リスナー
 resource "aws_lb_listener" "app_listener_green_https" {
   // use_https_listener = "1" のときのみ作成
-  // Terraformでcountをifのように使う: https://qiita.com/mia_0032/items/978449a06699ed1abe15
   count             = local.use_https_listener
   load_balancer_arn = var.app_alb_arn
   port              = "443"
@@ -72,12 +62,7 @@ resource "aws_lb_listener" "app_listener_redirect" {
   }
 }
 
-/**
- * ALBのリスナー (HTTP を利用する場合)
- * aws_lb_listener: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
- */
-
- // HTTP:80 本番用用リスナー (Green)
+// HTTP:80 本番用用リスナー (Green)
 resource "aws_lb_listener" "app_listener_green_http" {
   // use_http_listener = "1" のときのみ作成
   count             = local.use_http_listener
@@ -144,10 +129,6 @@ resource "aws_ecs_task_definition" "app_task_definition" {
   requires_compatibilities = ["FARGATE"]
 
   // タスクサイズ:
-  //   タスクが利用する CPU および メモリの合計量。(FARGATEの場合は必須)
-  //   container_definitions で定義したコンテナのCPUとメモリの合計値を指定メモリ
-  //   cpuとmemoryの値にはペアがあるので注意
-  //   - https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
   cpu    = 4096
   memory = 8192
 
@@ -179,7 +160,7 @@ resource "aws_ecs_task_definition" "app_task_definition" {
       cpu       = 2048
       memory    = 3072
       essential = true // essential=Trueのコンテナが停止した場合、タスク全体が停止する
-      // 80番ポートをホストにマッピング
+      // 3000番ポートをホストにマッピング
       portMappings = [
         {
           containerPort = local.front_container_port // フロントエンドのコンテナ
@@ -192,14 +173,13 @@ resource "aws_ecs_task_definition" "app_task_definition" {
           value = v
         }
       ]
+      // secrets managerから秘匿情報を取得して環境変数にセット
       secrets     = [
         for k, v in var.secrets_front : {
           name  = k
           valueFrom = v
         }
       ]
-      // コンテナの起動コマンド
-      # command = ["/entrypoint-front.sh"]
 
       // 終了シグナル発進時、この秒数を超えてコンテナが終了しない場合は強制終了させる
       stopTimeout = 30
@@ -238,7 +218,6 @@ resource "aws_ecs_task_definition" "app_task_definition" {
           valueFrom = v
         }
       ]
-      # command = ["/entrypoint-api.sh"]
       stopTimeout = 30
       logConfiguration = {
         logDriver = "awslogs"
@@ -322,12 +301,6 @@ resource "aws_ecs_service" "app_service" {
     container_port   = 80
   }
 
-  # deployment_controller {
-  #   // ECS: ローリングアップデート
-  #   // CODE_DEPLOY: Blue/Greenデプロイ
-  #   type = "CODE_DEPLOY"
-  # }
-
   // デプロイ中にサービス内で実行され、健全な状態を維持しなければならない実行タスク数の下限 (%)
   deployment_minimum_healthy_percent = 100
 
@@ -335,7 +308,6 @@ resource "aws_ecs_service" "app_service" {
   deployment_maximum_percent = 200
 
   // デバッグ用の設定
-  // https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/userguide/ecs-exec.html
   enable_execute_command = true
 
   lifecycle {

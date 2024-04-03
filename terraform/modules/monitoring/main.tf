@@ -1,14 +1,10 @@
-/**
- * ECSのオートスケーリング対象設定
- * aws_appautoscaling_target: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target
- */
+// ECSのオートスケーリング対象設定
 resource "aws_appautoscaling_target" "ecs_appautoscaling_target" {
   // オートスケーリング対象のサービス名を指定
   service_namespace = "ecs"
   // "service/クラスター名/サービス名" 形式で紐付けたいECSのサービスを指定
   resource_id = "service/${var.ecs_cluster_name}/${var.ecs_service_name}"
   // オートスケーリングを実行する対象を指定
-  // https://docs.aws.amazon.com/autoscaling/application/APIReference/API_RegisterScalableTarget.html#autoscaling-RegisterScalableTarget-request-ScalableDimension
   scalable_dimension = "ecs:service:DesiredCount"
   role_arn           = aws_iam_role.ecs_autoscaling_role.arn
   // オートスケーリングさせる時の最小値と最大値
@@ -20,15 +16,7 @@ resource "aws_appautoscaling_target" "ecs_appautoscaling_target" {
   ]
 }
 
-/**
- * スケーリングポリシー設定
- * aws_appautoscaling_policy: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy
- *
- * ターゲット当たりの分間リクエスト数を300程度に保つ設定
- * (スケールアウトは3データポイント/3分, スケールインは15データポイント/15分で評価が行われる)
- * TargetTrackingScaling: 指定したメトリクスが指定した数値になるようにスケールアウト/インを行うオートスケール
- * ECSで通常時とスパイク時のオートスケールを運用する: https://tech.timee.co.jp/entry/2020/08/31/191612
- */
+// スケーリングポリシー設定
 resource "aws_appautoscaling_policy" "ecs_1_policy" {
   name               = "${var.app_name}-${var.stage}-AccessCountTracking"
   policy_type        = "TargetTrackingScaling"
@@ -43,10 +31,7 @@ resource "aws_appautoscaling_policy" "ecs_1_policy" {
     scale_in_cooldown = 300
     scale_out_cooldown = 180
     customized_metric_specification {
-      // ターゲットグループ1の リクエスト数/ターゲット台数 を取得
-      // SELECT SUM(RequestCountPerTarget)
-      //   FROM SCHEMA("AWS/ApplicationELB", TargetGroup)
-      //   WHERE TargetGroup = 'targetgroup/xxxxxxxxxxx-app-tg-2/xxxxxxxxxxxxxxxx'
+      // app_tg_1の「リクエスト数/ターゲット台数」を取得
       metrics {
         id    = "${var.app_name}_${var.stage}_m1"
         label = "${var.app_name}-${var.stage}-app-tg-1 RequestCountPerTarget"
@@ -62,7 +47,6 @@ resource "aws_appautoscaling_policy" "ecs_1_policy" {
             }
           }
           stat = "Sum"
-          // 単位: Percent | Count | None | etc...
           // https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
           unit = "None"
         }

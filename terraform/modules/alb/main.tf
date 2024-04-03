@@ -1,7 +1,4 @@
-/**
- * ALB用セキュリティグループ
- * aws_security_group: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
- */
+// ALB用セキュリティグループ
 resource "aws_security_group" "app_alb_sg" {
   name   = "${var.app_name}-${var.stage}-app-alb-sg"
   vpc_id = var.vpc_id
@@ -33,10 +30,7 @@ resource "aws_security_group" "app_alb_sg" {
   }
 }
 
-/**
- * ALB
- * aws_alb: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
- */
+// ALB
 resource "aws_lb" "app_alb" {
   name               = "${var.app_name}-${var.stage}-app-alb"
   load_balancer_type = "application"

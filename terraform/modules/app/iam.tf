@@ -1,6 +1,4 @@
-/**
- * タスク実行ロール
- */
+// タスク実行ロール
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "${var.app_name}-${var.stage}-EcsTaskExecutionRole"
   assume_role_policy = jsonencode({
@@ -53,9 +51,7 @@ resource "aws_iam_role_policy_attachment" "attach_ecs_task_execution_role_policy
   policy_arn = aws_iam_policy.ecs_task_execution_policy.arn
 }
 
-/**
- * タスクロール
- */
+// タスクロール
 resource "aws_iam_role" "ecs_task_role" {
   name = "${var.app_name}-${var.stage}-EcsTaskRole"
   assume_role_policy = jsonencode({
@@ -85,15 +81,6 @@ resource "aws_iam_policy" "ecs_task_policy" {
         ],
         "Resource" : [
           "arn:aws:secretsmanager:ap-northeast-1:${var.account_id}:secret:/${var.app_name}/*"
-        ]
-      },
-      {
-        "Effect": "Allow",
-        "Action": [
-          "sns:Publish"
-        ],
-        "Resource": [
-          var.sns_topic_arn
         ]
       }
     ]

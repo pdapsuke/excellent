@@ -76,12 +76,6 @@ output "db_secrets_manager_arn" {
   value = module.secrets.db_secrets_manager_arn
 }
 
-module "base" {
-  source   = "../../modules/base"
-  app_name = local.app_name
-  stage    = local.stage
-}
-
 module "db" {
   source              = "../../modules/db"
   app_name            = local.app_name
