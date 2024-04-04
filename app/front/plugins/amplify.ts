@@ -16,20 +16,6 @@ export default defineNuxtPlugin(nuxtApp => {
 			// OPTIONAL - This is used when autoSignIn is enabled for Auth.signUp
 			// 'code' is used for Auth.confirmSignUp, 'link' is used for email link verification
 			signUpVerificationMethod: 'code', // 'code' | 'link'
-
-			// OPTIONAL - Manually set the authentication flow type. Default is 'USER_SRP_AUTH'
-			// authenticationFlowType: 'ALLOW_REFRESH_TOKEN_AUTH',
-
-			// OPTIONAL - Hosted UI configuration
-			oauth: {
-				domain: 'https://excellent-poc.auth.ap-northeast-1.amazoncognito.com',
-				scope: [
-					'email', 'openid', 'phone'
-				],
-				redirectSignIn: 'https://www.serverworks.co.jp/',
-				redirectSignOut: 'http://localhost:3000/',
-				responseType: 'token', // or 'token', note that REFRESH token will only be generated when the responseType is code
-			},
 		},
 	})
 })
