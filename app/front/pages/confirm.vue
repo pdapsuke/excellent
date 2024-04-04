@@ -7,7 +7,7 @@
 					<v-card class="pa-5">
 						<v-card-title class="d-flex justify-center mb-3">
 							<div>
-								<v-img :src="`/logo-no-background.png`" contain height="180"></v-img>
+								<v-img :src="imgUrl" contain height="200"></v-img>
 							</div>
 						</v-card-title>
 						<v-form ref="confirmForm" lazy-validation>
@@ -44,6 +44,7 @@
 <script setup lang="ts">
 import { Auth } from 'aws-amplify'
 import { mdiCheck } from '@mdi/js'
+import imgUrl from '@/assets/logo.png';
 
 // ミドルウェアによるログインチェック
 definePageMeta({ middleware: ["disable-direct-access"] })
