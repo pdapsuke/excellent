@@ -42,6 +42,10 @@ export default defineNuxtConfig({
     public: {
       clientBaseUrl: process.env.NUXT_CLIENT_BASE_URL || '//localhost:8018/api/v1',
       serverBaseUrl: 'http://localhost:8018/api/v1',
+      // amplifyの設定値として使う変数
+      region: process.env.AWS_REGION,
+      userPoolId: process.env.COGNITO_USERPOOL_ID,
+      userPoolWebClientId: process.env.COGNITO_CLIENT_ID
     }
   },
 })
