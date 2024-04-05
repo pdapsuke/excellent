@@ -10,3 +10,6 @@ variable "db_user" {}
 variable "db_password" {}
 variable "db_host" {}
 variable "db_port" {}
+variable "resas_api_prefecture_url" {}
+variable "resas_api_city_url" {}
+variable "resas_api_key" {}

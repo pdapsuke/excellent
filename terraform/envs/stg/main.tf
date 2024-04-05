@@ -67,6 +67,9 @@ variable "find_place_url" { type = string }
 variable "place_details_url" { type = string }
 variable "find_place_api_key" { type = string }
 variable "photo_reference_url" { type = string }
+variable "resas_api_prefecture_url" { type = string }
+variable "resas_api_city_url" { type = string }
+variable "resas_api_key" { type = string }
 
 output "env_secrets_manager_arn" {
   value = module.secrets.env_secrets_manager_arn
@@ -119,6 +122,9 @@ module "app" {
     "PLACE_DETAILS_URL" : "${module.secrets.env_secrets_manager_arn}:place_details_url::",
     "FIND_PLACE_API_KEY" : "${module.secrets.env_secrets_manager_arn}:find_place_api_key::",
     "PHOTO_REFERENCE_URL" : "${module.secrets.env_secrets_manager_arn}:photo_reference_url::",
+    "RESAS_API_PREFECTURE_URL" : "${module.secrets.env_secrets_manager_arn}:resas_api_prefecture_url::",
+    "RESAS_API_CITY_URL" : "${module.secrets.env_secrets_manager_arn}:resas_api_city_url::",
+    "RESAS_API_KEY" : "${module.secrets.env_secrets_manager_arn}:resas_api_key::",
   }
   secrets_front = {
     "COGNITO_USERPOOL_ID" : "${module.secrets.env_secrets_manager_arn}:cognito_userool_id::",
@@ -144,19 +150,22 @@ module "route53_record" {
 }
 
 module "secrets" {
-  source              = "../../modules/secrets"
-  app_name            = local.app_name
-  stage               = local.stage
-  cognito_userool_id  = var.cognito_userool_id
-  cognito_client_id   = var.cognito_client_id
-  find_place_url      = var.find_place_url
-  place_details_url   = var.place_details_url
-  find_place_api_key  = var.find_place_api_key
-  photo_reference_url = var.photo_reference_url
-  db_user             = var.db_user
-  db_password         = var.db_password
-  db_host             = module.db.aurora_serverless_mysql80.endpoint
-  db_port             = module.db.aurora_serverless_mysql80.port
+  source                   = "../../modules/secrets"
+  app_name                 = local.app_name
+  stage                    = local.stage
+  cognito_userool_id       = var.cognito_userool_id
+  cognito_client_id        = var.cognito_client_id
+  find_place_url           = var.find_place_url
+  place_details_url        = var.place_details_url
+  find_place_api_key       = var.find_place_api_key
+  photo_reference_url      = var.photo_reference_url
+  resas_api_prefecture_url = var.resas_api_prefecture_url
+  resas_api_city_url       = var.resas_api_city_url
+  resas_api_key            = var.resas_api_key
+  db_user                  = var.db_user
+  db_password              = var.db_password
+  db_host                  = module.db.aurora_serverless_mysql80.endpoint
+  db_port                  = module.db.aurora_serverless_mysql80.port
 }
 
 module "monitoring" {
