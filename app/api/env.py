@@ -19,3 +19,6 @@ class Environment(BaseSettings):
     photo_reference_url: str
     mode: Mode
     db_secret_name: str
+    resas_api_prefecture_url: str
+    resas_api_city_url: str
+    resas_api_key: str
