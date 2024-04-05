@@ -34,9 +34,6 @@ variable "secrets_api" { type = map(any) }
 // frontコンテナのsecret
 variable "secrets_front" { type = map(any) }
 
-// snsのトピックARN
-variable "sns_topic_arn" {}
-
 // HTTPSでアクセスする場合のSSL証明書のARN
 variable "certificate_arn" {
   type        = string

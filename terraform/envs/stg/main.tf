@@ -101,7 +101,6 @@ module "app" {
   subnets             = var.public_subnets
   ingress_cidr_blocks = [local.vpc_cidr_block]
   app_alb_arn         = module.alb.app_alb.arn
-  sns_topic_arn       = module.base.sns_topic_arn
   certificate_arn     = var.certificate_arn
   env_api = {
     "MODE" : local.stage,
