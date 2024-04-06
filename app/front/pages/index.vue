@@ -64,48 +64,53 @@
         :width="7"
       ></v-progress-circular>
     </div>
-    <div v-if="loading==false">
-      <v-table class="d-flex justify-start">
-        <thead>
-          <tr>
-            <th class="text-left"></th>
-            <th class="text-left">バッティングセンター情報</th>
-            <th class="text-left"></th>
-            <th class="text-left"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="battingcenter in battingcenters"
-            :key="battingcenter.place_id">
-            <td>
-              <div class="d-flex justify-center ma-5">
-                <v-img
-                  :src="battingcenter.photos"
-                  contain
-                  max-height="300"
-                  max-width="300"
-                ></v-img>
-              </div>
-            </td>
-            <td>
-              <div class="d-flex justify-start">
-                <div><NuxtLink :to="`/batting_centers/${battingcenter.id}`">{{ battingcenter.name }}</NuxtLink></div>
-              </div>
-              <div class="d-flex justify-start">
-                <div>{{ battingcenter.formatted_address }}</div>
-              </div>
-            </td>
-            <td><div class="font-weight-bold text-secondary font-italic text-h5">{{ battingcenter.itta_count }}</div></td>
-            <td>
-              <IttaButton
-                :itta="battingcenter.itta"
-                @click="itta(battingcenter)"
-              ></IttaButton>
-            </td>
-          </tr>
-        </tbody>
-      </v-table>      
+    <div v-else>
+      <div v-if="!!battingcenters == true">
+        <div v-if="battingcenters.length == 0" class="text-center">この地域のバッティングセンターは見つかりませんでした</div>
+        <div v-else>
+          <v-table class="d-flex justify-start">
+            <thead>
+              <tr>
+                <th class="text-left"></th>
+                <th class="text-left">バッティングセンター情報</th>
+                <th class="text-left"></th>
+                <th class="text-left"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="battingcenter in battingcenters"
+                :key="battingcenter.place_id">
+                <td>
+                  <div class="d-flex justify-center ma-5">
+                    <v-img
+                      :src="battingcenter.photos"
+                      contain
+                      max-height="300"
+                      max-width="300"
+                    ></v-img>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex justify-start">
+                    <div><NuxtLink :to="`/batting_centers/${battingcenter.id}`">{{ battingcenter.name }}</NuxtLink></div>
+                  </div>
+                  <div class="d-flex justify-start">
+                    <div>{{ battingcenter.formatted_address }}</div>
+                  </div>
+                </td>
+                <td><div class="font-weight-bold text-secondary font-italic text-h5">{{ battingcenter.itta_count }}</div></td>
+                <td>
+                  <IttaButton
+                    :itta="battingcenter.itta"
+                    @click="itta(battingcenter)"
+                  ></IttaButton>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
+      </div>
     </div>
   </div>
 </template>

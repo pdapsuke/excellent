@@ -51,7 +51,8 @@
         </div>
       </v-col>
     </v-row>
-    <div class="mb-3">
+    <div v-if="machineInformations.length == 0" class="text-center">投稿されたマシン情報はありません</div>
+    <div class="mb-3" v-else>
       <v-table>
         <thead>
           <tr>
