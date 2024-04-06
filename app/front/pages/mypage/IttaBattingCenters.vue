@@ -60,13 +60,13 @@ interface BattingCenter {
     formatted_address: string
     photos: any[] | undefined
     itta_count: number
-    itta: string
+    itta: boolean
 }
 
 interface IttaResponse {
     id: number
     itta_count: number
-    itta: string
+    itta: boolean
 }
 
 const alert = ref<any>(null)
@@ -88,15 +88,15 @@ if (!data.value || error.value) {
 // 行った！フラグに応じて行った！を登録/解除
 async function itta(battingcenter: BattingCenter) {
 
-  // 行った！フラグが"yes"の場合、行った！ユーザーの追加
-  if (battingcenter.itta == "no") {
+  // 行った！フラグがfalseの場合、行った！ユーザーの追加
+  if (battingcenter.itta == false) {
     ({ data: ittaResponse, error: ittaError } =  await useBattingCenterApi().addIttaUser(battingcenter.id))
 
-  // 行った！フラグが"no"の場合、行った！ユーザーの削除
-  } else if (battingcenter.itta == "yes") {
+  // 行った！フラグがtrueの場合、行った！ユーザーの削除
+  } else if (battingcenter.itta == true) {
     ({data: ittaResponse, error: ittaError } =  await useBattingCenterApi().removeIttaUser(battingcenter.id))
 
-  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  // 行った！フラグがtrue, false以外の場合、エラー出力
   } else {
     alert.value.error("Bad Request")
     console.error("Bad Request")

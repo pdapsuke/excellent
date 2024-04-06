@@ -139,9 +139,9 @@ interface MachineInformation{
   breaking_balls: BreakingBall[]
   ball_speeds: BallSpeed[]
   atta_count: number
-  atta: string
+  atta: boolean
   nakatta_count: number
-  nakatta: string
+  nakatta: boolean
   updated: string
 }
 
@@ -149,8 +149,8 @@ interface UpdateAttaNakattaResponse{
   id: number
   atta_count: number
   nakatta_count: number
-  atta: string
-  nakatta: string
+  atta: boolean
+  nakatta: boolean
 }
 
 interface BattingCenterAndMachines {
@@ -198,15 +198,15 @@ if (!breakingBalls.value || breakingBallsError.value) {
 
 // あった！フラグに応じてあった！を登録/解除
 async function atta(battingCenterId: number, machineInformation: MachineInformation) {
-  // あった！フラグが"no"の場合、あった！ユーザーの追加
-  if (machineInformation.atta == "no") {
+  // あった！フラグがfalseの場合、あった！ユーザーの追加
+  if (machineInformation.atta == false) {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().addAttaUser(battingCenterId, machineInformation.id))
 
-  // あった！フラグが"yes"の場合、あった！ユーザーの削除
-  } else if (machineInformation.atta == "yes") {
+  // あった！フラグがtrueの場合、あった！ユーザーの削除
+  } else if (machineInformation.atta == true) {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().removeAttaUser(battingCenterId, machineInformation.id))
 
-  // あった！フラグが"yes", "no"以外の場合、エラー出力
+  // あった！フラグがtrue, false以外の場合、エラー出力
   } else {
     alert.value.error("Bad Request")
     console.error("Bad Request")
@@ -224,15 +224,15 @@ async function atta(battingCenterId: number, machineInformation: MachineInformat
 
 // なかった！フラグに応じてなかった！を登録/解除
 async function nakatta(battingCenterId: number, machineInformation: MachineInformation) {
-  // なかった！フラグが"no"の場合、なかった！ユーザーの追加
-  if (machineInformation.nakatta == "no") {
+  // なかった！フラグがfalseの場合、なかった！ユーザーの追加
+  if (machineInformation.nakatta == false) {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().addNakattaUser(battingCenterId, machineInformation.id))
 
-  // なかった！フラグが"yes"の場合、なかった！ユーザーの削除
-  } else if (machineInformation.nakatta == "yes") {
+  // なかった！フラグがtrueの場合、なかった！ユーザーの削除
+  } else if (machineInformation.nakatta == true) {
     ({ data: attaNakattaUpdateResponse, error: attaNakattaUpdateError } =  await useMachineInformationApi().removeNakattaUser(battingCenterId, machineInformation.id))
 
-  // 行った！フラグが"yes", "no"以外の場合、エラー出力
+  // 行った！フラグがtrue, false以外の場合、エラー出力
   } else {
     alert.value.error("Bad Request")
     console.error("Bad Request")

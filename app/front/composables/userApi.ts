@@ -5,7 +5,7 @@ interface BattingCenter {
   formatted_address: string
   photos: any[] | undefined
   itta_count: number
-  itta: string
+  itta: boolean
 }
 
 interface BreakingBall {
@@ -24,9 +24,9 @@ interface MachineInformation{
   breaking_balls: BreakingBall[]
   ball_speeds: BallSpeed[]
   atta_count: number
-  atta: string
+  atta: boolean
   nakatta_count: number
-  nakatta: string
+  nakatta: boolean
   updated: string
 }
 

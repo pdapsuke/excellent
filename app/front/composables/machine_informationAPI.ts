@@ -21,9 +21,9 @@ interface MachineInformation{
   breaking_balls: BreakingBall[]
   ball_speeds: BallSpeed[]
   atta_count: number
-  atta: string
+  atta: boolean
   nakatta_count: number
-  nakatta: string
+  nakatta: boolean
   updated: string
 }
 
@@ -31,8 +31,8 @@ interface UpdateAttaNakattaResponse{
   id: number
   atta_count: number
   nakatta_count: number
-  atta: string
-  nakatta: string
+  atta: boolean
+  nakatta: boolean
 }
 
 // useBattingCenterApiの名前で関数をエクスポート

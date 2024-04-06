@@ -1,9 +1,9 @@
 <template>
   <div>
     <v-btn
-      :class="{ 'active-btn': props.atta === 'yes' }"
+      :class="{ 'active-btn': props.atta === true }"
       flat
-			:style="{ color: props.atta === 'no' ? 'gray' : 'red' }"
+			:style="{ color: props.atta === false ? 'gray' : 'red' }"
     >
 			あった！
     </v-btn>

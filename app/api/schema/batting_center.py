@@ -15,7 +15,7 @@ class BattingCenterResponseSchema(BaseModel):
     formatted_address: str
     photos: Optional[str]
     itta_count: int
-    itta: str # 行った！フラグ
+    itta: bool
 
 class BattingCenterDetailResponseSchema(BaseModel):
     id: int
@@ -24,7 +24,7 @@ class BattingCenterDetailResponseSchema(BaseModel):
     formatted_address: str
     photos: List[str]
     itta_count: int
-    itta: str # 行った！フラグ
+    itta: bool
     machine_informations: List[MachineInformationResponseSchema]
 
 # 投稿、あった！、なかった！したマシン情報を返す
@@ -42,9 +42,9 @@ class IttaBattingCenterResponseSchema(BaseModel):
     name: str
     formatted_address: str
     itta_count: int
-    itta: str # 行った！フラグ
+    itta: bool
 
 class BattingCenterIttaUpdateSchema(BaseModel):
     id: int
     itta_count: int
-    itta: str # 行った！フラグ
+    itta: bool

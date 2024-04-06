@@ -55,11 +55,11 @@ class BattingCenter(Base):
     # usersテーブルとの多対多のリレーション
     itta_users = relationship("User", secondary="itta_users_centers", back_populates="itta_centers")
 
-    def set_itta_flag(self, user: User) -> str:
+    def set_itta_flag(self, user: User) -> bool:
         if self in user.itta_centers:
-            return "yes"
+            return True
         else:
-            return "no"
+            return False
 
     def count_itta(self) -> int:
         return len(self.itta_users)
@@ -136,17 +136,17 @@ class MachineInformation(Base):
     # usersテーブルとの多対多のリレーション（中間テーブル：nakatta_users_machines）
     nakatta_users = relationship("User", secondary="nakatta_users_machines", back_populates="nakatta_machines")
 
-    def set_atta_flag(self, user: User) -> str:
+    def set_atta_flag(self, user: User) -> bool:
         if user in self.atta_users:
-            return "yes"
+            return True
         else:
-            return "no"
+            return False
 
-    def set_nakatta_flag(self, user: User) -> str:
+    def set_nakatta_flag(self, user: User) -> bool:
         if user in self.nakatta_users:
-            return "yes"
+            return True
         else:
-            return "no"
+            return False
 
     def count_atta(self) -> int:
         return len(self.atta_users)

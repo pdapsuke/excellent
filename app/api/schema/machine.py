@@ -32,9 +32,9 @@ class MachineInformationResponseSchema(BaseModel):
     ball_speeds: List[BallSpeedResponseSchema]
     batter_box: str
     atta_count: int
-    atta: str # あった！フラグ
+    atta: bool
     nakatta_count: int
-    nakatta: str # なかった！フラグ
+    nakatta: bool
     updated: datetime
 
 
@@ -42,5 +42,5 @@ class MachineInformationUpdateAttaNakattaResponseSchema(BaseModel):
     id: int
     atta_count: int
     nakatta_count: int
-    atta: str # あった！フラグ
-    nakatta: str # なかった！フラグ
+    atta: bool
+    nakatta: bool

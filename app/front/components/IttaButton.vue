@@ -1,9 +1,9 @@
 <template>
   <div>
     <v-btn
-      :class="{ 'active-btn': props.itta === 'yes', 'inactive-btn': props.itta === 'no' }"
-      :variant="props.itta === 'no' ? 'outlined': ''"
-			:color="props.itta === 'no' ? 'white': 'red'"
+      :class="{ 'active-btn': props.itta === true, 'inactive-btn': props.itta === false }"
+      :variant="props.itta === true ? 'outlined': ''"
+			:color="props.itta === false ? 'white': 'red'"
       rounded
     >
 			行った！
