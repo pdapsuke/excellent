@@ -16,6 +16,7 @@ IMAGE_TAG=
 args=()
 while [ "$#" != 0 ]; do
   case $1 in
+    -h | --help  ) usage;;
     -s | --stage ) shift; STAGE="$1" ;;
     -t | --tag   ) shift; IMAGE_TAG="$1" ;;
     -* | --*     ) echo "不正なオプション: $1" >&2; exit 1 ;;

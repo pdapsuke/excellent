@@ -6,6 +6,16 @@ resource "aws_lb_target_group" "app_tg_1" {
   target_type = "ip"
   vpc_id      = var.vpc_id
 
+  health_check {
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    path                = "/healthCheck"
+    protocol            = "HTTP"
+    matcher             = "200"
+  }
+
   tags = {
     Name = "${var.app_name}-${var.stage}-app-tg-1"
   }
@@ -62,7 +72,7 @@ resource "aws_lb_listener" "app_listener_redirect" {
   }
 }
 
-// HTTP:80 本番用用リスナー (Green)
+// HTTP:80 本番用用リスナー
 resource "aws_lb_listener" "app_listener_green_http" {
   // use_http_listener = "1" のときのみ作成
   count             = local.use_http_listener
