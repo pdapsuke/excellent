@@ -30,7 +30,7 @@ resource "aws_security_group" "app_alb_sg" {
   }
 }
 
-// ALB
+// アプリ用ALB
 resource "aws_lb" "app_alb" {
   name               = "${var.app_name}-${var.stage}-app-alb"
   load_balancer_type = "application"
@@ -43,6 +43,21 @@ resource "aws_lb" "app_alb" {
   lifecycle {
     # terraformの変更を適用しない
     # https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes
+    ignore_changes = all
+  }
+}
+
+// 固定レスポンス用ALB
+resource "aws_lb" "fixed_response_alb" {
+  name               = "${var.app_name}-${var.stage}-fixed-response-alb"
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.app_alb_sg.id]
+  subnets            = var.public_subnets
+  ip_address_type    = "ipv4"
+  idle_timeout       = 60
+  internal           = false  // privateサブネットにALBを作成する場合はtrue
+
+  lifecycle {
     ignore_changes = all
   }
 }

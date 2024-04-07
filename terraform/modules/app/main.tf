@@ -96,6 +96,79 @@ resource "aws_lb_listener" "app_listener_green_http" {
   }
 }
 
+// HTTPS:443 固定レスポンス用リスナー
+resource "aws_lb_listener" "fixed_response_listener_https" {
+  count             = local.use_https_listener
+  load_balancer_arn = var.fixed_response_alb_arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate_arn
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "サービスは一時停止しています"
+      status_code  = "500"
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      certificate_arn,
+      default_action
+    ]
+  }
+}
+
+// HTTP:80 固定レスポンス用リスナー (HTTPS:443 にリダイレクト)
+resource "aws_lb_listener" "fixed_response_listener_redirect" {
+  count             = local.use_https_listener
+  load_balancer_arn = var.fixed_response_alb_arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+  lifecycle {
+    ignore_changes = [
+      default_action
+    ]
+  }
+}
+
+// HTTP:80 固定レスポンス用リスナー
+resource "aws_lb_listener" "fixed_response_listener_http" {
+  count             = local.use_http_listener
+  load_balancer_arn = var.fixed_response_alb_arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "サービスは一時停止しています"
+      status_code  = "500"
+    }
+  }
+  lifecycle {
+    ignore_changes = [
+      default_action
+    ]
+  }
+}
+
 // ECSクラスター
 resource "aws_ecs_cluster" "app_cluster" {
   name = "${var.app_name}-${var.stage}-app"

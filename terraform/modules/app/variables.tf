@@ -54,5 +54,8 @@ locals {
   nginx_container_port     = 80
 }
 
-// ALBのARN
+// アプリ用ALBのARN
 variable "app_alb_arn" {}
+
+// 固定レスポンス用ALBのARN
+variable "fixed_response_alb_arn" {}

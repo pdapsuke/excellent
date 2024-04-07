@@ -46,7 +46,7 @@ locals {
   app_name                    = replace(lower("excellent"), "-", "")
   stage                       = "stg"
   vpc_cidr_block              = "192.168.0.0/16"
-  nuxt_client_base_url_suffix = "://${module.route53_record.route53_record.name}/api/v1"
+  nuxt_client_base_url_suffix = "://${module.route53_record.route53_record_app_alb.name}/api/v1"
 }
 
 // 変数定義
@@ -93,18 +93,19 @@ module "db" {
 }
 
 module "app" {
-  source              = "../../modules/app"
-  app_name            = local.app_name
-  stage               = local.stage
-  account_id          = local.account_id
-  front_app_image_uri = var.front_app_image_uri
-  api_app_image_uri   = var.api_app_image_uri
-  nginx_app_image_uri = var.nginx_app_image_uri
-  vpc_id              = var.vpc_id
-  subnets             = var.public_subnets
-  ingress_cidr_blocks = [local.vpc_cidr_block]
-  app_alb_arn         = module.alb.app_alb.arn
-  certificate_arn     = var.certificate_arn
+  source                 = "../../modules/app"
+  app_name               = local.app_name
+  stage                  = local.stage
+  account_id             = local.account_id
+  front_app_image_uri    = var.front_app_image_uri
+  api_app_image_uri      = var.api_app_image_uri
+  nginx_app_image_uri    = var.nginx_app_image_uri
+  vpc_id                 = var.vpc_id
+  subnets                = var.public_subnets
+  ingress_cidr_blocks    = [local.vpc_cidr_block]
+  app_alb_arn            = module.alb.app_alb.arn
+  fixed_response_alb_arn = module.alb.fixed_response_alb.arn
+  certificate_arn        = var.certificate_arn
   env_api = {
     "MODE" : local.stage,
     "DB_NAME" : local.stage,
@@ -141,12 +142,14 @@ module "alb" {
 }
 
 module "route53_record" {
-  source        = "../../modules/route53"
-  hostzone_id   = var.hostzone_id
-  stage         = local.stage
-  hostzone_name = var.hostzone_name
-  lb_zone_id    = module.alb.app_alb.zone_id
-  lb_zone_name  = module.alb.app_alb.dns_name
+  source                      = "../../modules/route53"
+  hostzone_id                 = var.hostzone_id
+  stage                       = local.stage
+  hostzone_name               = var.hostzone_name
+  app_lb_zone_id              = module.alb.app_alb.zone_id
+  app_lb_zone_name            = module.alb.app_alb.dns_name
+  fixed_response_lb_zone_id   = module.alb.fixed_response_alb.zone_id
+  fixed_response_lb_zone_name = module.alb.fixed_response_alb.dns_name
 }
 
 module "secrets" {
