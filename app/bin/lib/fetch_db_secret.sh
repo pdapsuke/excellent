@@ -5,5 +5,5 @@ if [ "$MODE" != "local" ]; then
 	DB_PASSWORD=$(echo "$SECRET_STRING" | jq -r '.db_password')
 	DB_USER=$(echo "$SECRET_STRING" | jq -r '.db_user')
 	DB_HOST=$(echo "$SECRET_STRING" | jq -r '.db_host')
-	DB_PORT=$(echo "$SECRET_STRING" | jq -r '.db_password')
+	DB_PORT=$(echo "$SECRET_STRING" | jq -r '.db_port')
 fi
