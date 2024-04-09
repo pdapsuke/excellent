@@ -18,3 +18,4 @@ app/supervisord.pid
 # envファイル
 ###########################
 *.env
+!sample.env
