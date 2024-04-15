@@ -47,6 +47,11 @@ locals {
   stage                       = "stg"
   vpc_cidr_block              = "192.168.0.0/16"
   nuxt_client_base_url_suffix = "://${module.route53_record.route53_record_app_alb.name}/api/v1"
+  find_place_url              = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+  place_details_url           = "https://maps.googleapis.com/maps/api/place/details/json"
+  photo_reference_url         = "https://maps.googleapis.com/maps/api/place/photo"
+  resas_api_prefecture_url    = "https://opendata.resas-portal.go.jp/api/v1/prefectures"
+  resas_api_city_url          = "https://opendata.resas-portal.go.jp/api/v1/cities"
 }
 
 // 変数定義
@@ -63,12 +68,7 @@ variable "db_user" { type = string }
 variable "db_password" { type = string }
 variable "cognito_userool_id" { type = string }
 variable "cognito_client_id" { type = string }
-variable "find_place_url" { type = string }
-variable "place_details_url" { type = string }
 variable "find_place_api_key" { type = string }
-variable "photo_reference_url" { type = string }
-variable "resas_api_prefecture_url" { type = string }
-variable "resas_api_city_url" { type = string }
 variable "resas_api_key" { type = string }
 
 output "env_secrets_manager_arn" {
@@ -111,6 +111,11 @@ module "app" {
     "DB_NAME" : local.stage,
     "DB_SECRET_NAME" : "/${local.app_name}/${local.stage}/db",
     "AWS_REGION" : local.aws_region,
+    "FIND_PLACE_URL" : "${local.find_place_url}",
+    "PLACE_DETAILS_URL" : "${local.place_details_url}",
+    "PHOTO_REFERENCE_URL" : "${local.photo_reference_url}",
+    "RESAS_API_PREFECTURE_URL" : "${local.resas_api_prefecture_url}",
+    "RESAS_API_CITY_URL" : "${local.resas_api_city_url}",
   }
   env_front = {
     "AWS_REGION" : local.aws_region,
@@ -119,12 +124,7 @@ module "app" {
   secrets_api = {
     "COGNITO_USERPOOL_ID" : "${module.secrets.env_secrets_manager_arn}:cognito_userool_id::",
     "COGNITO_CLIENT_ID" : "${module.secrets.env_secrets_manager_arn}:cognito_client_id::",
-    "FIND_PLACE_URL" : "${module.secrets.env_secrets_manager_arn}:find_place_url::",
-    "PLACE_DETAILS_URL" : "${module.secrets.env_secrets_manager_arn}:place_details_url::",
     "FIND_PLACE_API_KEY" : "${module.secrets.env_secrets_manager_arn}:find_place_api_key::",
-    "PHOTO_REFERENCE_URL" : "${module.secrets.env_secrets_manager_arn}:photo_reference_url::",
-    "RESAS_API_PREFECTURE_URL" : "${module.secrets.env_secrets_manager_arn}:resas_api_prefecture_url::",
-    "RESAS_API_CITY_URL" : "${module.secrets.env_secrets_manager_arn}:resas_api_city_url::",
     "RESAS_API_KEY" : "${module.secrets.env_secrets_manager_arn}:resas_api_key::",
   }
   secrets_front = {
@@ -153,22 +153,17 @@ module "route53_record" {
 }
 
 module "secrets" {
-  source                   = "../../modules/secrets"
-  app_name                 = local.app_name
-  stage                    = local.stage
-  cognito_userool_id       = var.cognito_userool_id
-  cognito_client_id        = var.cognito_client_id
-  find_place_url           = var.find_place_url
-  place_details_url        = var.place_details_url
-  find_place_api_key       = var.find_place_api_key
-  photo_reference_url      = var.photo_reference_url
-  resas_api_prefecture_url = var.resas_api_prefecture_url
-  resas_api_city_url       = var.resas_api_city_url
-  resas_api_key            = var.resas_api_key
-  db_user                  = var.db_user
-  db_password              = var.db_password
-  db_host                  = module.db.aurora_serverless_mysql80.endpoint
-  db_port                  = module.db.aurora_serverless_mysql80.port
+  source             = "../../modules/secrets"
+  app_name           = local.app_name
+  stage              = local.stage
+  cognito_userool_id = var.cognito_userool_id
+  cognito_client_id  = var.cognito_client_id
+  find_place_api_key = var.find_place_api_key
+  resas_api_key      = var.resas_api_key
+  db_user            = var.db_user
+  db_password        = var.db_password
+  db_host            = module.db.aurora_serverless_mysql80.endpoint
+  db_port            = module.db.aurora_serverless_mysql80.port
 }
 
 module "monitoring" {

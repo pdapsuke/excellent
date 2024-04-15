@@ -10,12 +10,7 @@ resource "aws_secretsmanager_secret_version" "env_variables" {
   secret_string = jsonencode({
     cognito_userool_id     = var.cognito_userool_id
     cognito_client_id = var.cognito_client_id
-    find_place_url = var.find_place_url
-    place_details_url = var.place_details_url
     find_place_api_key = var.find_place_api_key
-    photo_reference_url = var.photo_reference_url
-    resas_api_prefecture_url = var.resas_api_prefecture_url
-    resas_api_city_url = var.resas_api_city_url
     resas_api_key = var.resas_api_key
   })
 }
