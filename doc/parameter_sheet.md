@@ -18,6 +18,12 @@ terraform/envs/${stage}/main.tf
 | locals.app_name | アプリ名 |
 | locals.stage | ステージ名 |
 | locals.vpc_cidr_block | リソースをデプロイするVPCのCIDR |
+| locals.find_place_url | google mapのfind place APIのURL |
+| localsplace_details_url | google mapのplace details APIのURL |
+| locals.photo_reference_url | google mapのphoto reference APIのURL |
+| locals.resas_api_prefecture_url | resas prefecture APIのURL |
+| locals.resas_api_city_url | resas city APIのURL |
+| locals.container_image_version | デプロイするコンテナイメージのバージョン |
 
 ### terraformデプロイ実行時、入力待ちとなるパラメータ
 *localsで管理したほうがいいものがないかチェックしておく  
@@ -30,12 +36,7 @@ terraform/envs/${stage}/environment.auto.tfvars
 | db_password | DBのパスワード |
 | cognito_userool_id | cognitoのユーザープールid |
 | cognito_client_id | cognitoのアプリケーションクライアントid |
-| find_place_url | google mapのfind place APIのURL |
-| place_details_url | google mapのplace details APIのURL |
 | find_place_api_key | google map APIのキー |
-| photo_reference_url | google mapのphoto reference APIのURL |
-| resas_api_prefecture_url | resas prefecture APIのURL |
-| resas_api_city_url | resas city APIのURL |
 | resas_api_key | resas APIのキー |
 | front_app_image_uri | フロントエンドのコンテナイメージのURI |
 | api_app_image_uri | バックエンドエンドのコンテナイメージのURI |
