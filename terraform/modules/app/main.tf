@@ -239,7 +239,7 @@ resource "aws_ecs_task_definition" "app_task_definition" {
   container_definitions = jsonencode([
     {
       name      = local.front_container_name  // フロントエンドのコンテナ
-      image     = "${var.front_app_image_uri}:latest"
+      image     = "${var.front_app_image_uri}:${var.container_image_version}"
       cpu       = 2048
       memory    = 3072
       essential = true // essential=Trueのコンテナが停止した場合、タスク全体が停止する
@@ -279,7 +279,7 @@ resource "aws_ecs_task_definition" "app_task_definition" {
     },
     {
       name      = local.api_container_name // バックエンドのコンテナ
-      image     = "${var.api_app_image_uri}:latest"
+      image     = "${var.api_app_image_uri}:${var.container_image_version}"
       cpu       = 1024
       memory    = 3072
       essential = true
@@ -313,7 +313,7 @@ resource "aws_ecs_task_definition" "app_task_definition" {
     },
     {
       name      = local.nginx_container_name  // nginxのコンテナ
-      image     = "${var.nginx_app_image_uri}:latest"
+      image     = "${var.nginx_app_image_uri}:${var.container_image_version}"
       cpu       = 1024
       memory    = 2048
       essential = true

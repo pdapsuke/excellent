@@ -11,6 +11,9 @@ variable "api_app_image_uri" {}
 // ECSタスクのコンテナイメージのURI(nginx)
 variable "nginx_app_image_uri" {}
 
+// コンテナイメージのバージョン
+variable "container_image_version" { type = string }
+
 // ECSのセキュリティグループ・ALBのターゲットグループを作成するVPC
 variable "vpc_id" {}
 

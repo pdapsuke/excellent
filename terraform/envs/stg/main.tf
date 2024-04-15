@@ -52,6 +52,7 @@ locals {
   photo_reference_url         = "https://maps.googleapis.com/maps/api/place/photo"
   resas_api_prefecture_url    = "https://opendata.resas-portal.go.jp/api/v1/prefectures"
   resas_api_city_url          = "https://opendata.resas-portal.go.jp/api/v1/cities"
+  container_image_version     = "latest"
 }
 
 // 変数定義
@@ -93,19 +94,20 @@ module "db" {
 }
 
 module "app" {
-  source                 = "../../modules/app"
-  app_name               = local.app_name
-  stage                  = local.stage
-  account_id             = local.account_id
-  front_app_image_uri    = var.front_app_image_uri
-  api_app_image_uri      = var.api_app_image_uri
-  nginx_app_image_uri    = var.nginx_app_image_uri
-  vpc_id                 = var.vpc_id
-  subnets                = var.public_subnets
-  ingress_cidr_blocks    = [local.vpc_cidr_block]
-  app_alb_arn            = module.alb.app_alb.arn
-  fixed_response_alb_arn = module.alb.fixed_response_alb.arn
-  certificate_arn        = var.certificate_arn
+  source                  = "../../modules/app"
+  app_name                = local.app_name
+  stage                   = local.stage
+  account_id              = local.account_id
+  front_app_image_uri     = var.front_app_image_uri
+  api_app_image_uri       = var.api_app_image_uri
+  nginx_app_image_uri     = var.nginx_app_image_uri
+  container_image_version = local.container_image_version
+  vpc_id                  = var.vpc_id
+  subnets                 = var.public_subnets
+  ingress_cidr_blocks     = [local.vpc_cidr_block]
+  app_alb_arn             = module.alb.app_alb.arn
+  fixed_response_alb_arn  = module.alb.fixed_response_alb.arn
+  certificate_arn         = var.certificate_arn
   env_api = {
     "MODE" : local.stage,
     "DB_NAME" : local.stage,
