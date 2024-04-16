@@ -33,4 +33,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-**/*.auto.tfvars
+# envs/sample以外のenvs配下はgit管理に置かない
+envs/
+!envs/sample/
+!envs/sample/*

@@ -19,14 +19,13 @@ terraform/envs/${stage}/main.tf
 | locals.stage | ステージ名 |
 | locals.vpc_cidr_block | リソースをデプロイするVPCのCIDR |
 | locals.find_place_url | google mapのfind place APIのURL |
-| localsplace_details_url | google mapのplace details APIのURL |
+| locals.place_details_url | google mapのplace details APIのURL |
 | locals.photo_reference_url | google mapのphoto reference APIのURL |
 | locals.resas_api_prefecture_url | resas prefecture APIのURL |
 | locals.resas_api_city_url | resas city APIのURL |
 | locals.container_image_version | デプロイするコンテナイメージのバージョン |
 
 ### terraformデプロイ実行時、入力待ちとなるパラメータ
-*localsで管理したほうがいいものがないかチェックしておく  
 terraform/envs/${stage}/environment.auto.tfvars
 | 変数名 | 説明 |
 | -- | -- |

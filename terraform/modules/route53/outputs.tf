@@ -5,3 +5,7 @@ output "route53_record_app_alb" {
 output "route53_record_fixed_response_alb" {
   value = aws_route53_record.www2
 }
+
+output "route53_url" {
+  value = aws_route53_record.www1.name
+}
