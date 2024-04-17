@@ -34,6 +34,6 @@ override.tf.json
 terraform.rc
 
 # envs/sample以外のenvs配下はgit管理に置かない
-envs/
+envs/*
 !envs/sample/
 !envs/sample/*
