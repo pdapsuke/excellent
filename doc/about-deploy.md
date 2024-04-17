@@ -3,7 +3,7 @@
 
 ### 前提（初回デプロイ時のみ実行）
 1. VPC, パブリックサブネット×2, プライベートサブネット×2を用意してください。
-1. [パラメータシート](./parameter_sheet.md#cognito-ユーザープールパラメータ)に従って、Cognitoユーザープール, アプリケーションクライアントを作成してください。
+1. [パラメータシート](./parameter-sheet.md#cognito-ユーザープールパラメータ)に従って、Cognitoユーザープール, アプリケーションクライアントを作成してください。
 1. 以下のコマンドを実行し、ECRを作成してください。  
 ※ホストにAWSCLIがインストール済み、クレデンシャル(`~/.aws/config`, `~/.aws/credentials` Administrator権限)が設定されている必要があります。EC2上で実行する場合はIAMロールへポリシーアタッチしてください。  
     ```shell
@@ -66,7 +66,7 @@ echo $STAGE $CONTAINER_IMAGE_VERSION
 ```
 
 ### environment.auto.tfvarsの設定
-[environment.auto.tfvarsのパラメータシート](./parameter_sheet.md#terraformデプロイ実行時入力待ちとなるパラメータ)を参考に、`terraform/envs/${STAGE}/environment.auto.tfvars`を実際の値に書き換えてください
+[environment.auto.tfvarsのパラメータシート](./parameter-sheet.md#terraformデプロイ実行時入力待ちとなるパラメータ)を参考に、`terraform/envs/${STAGE}/environment.auto.tfvars`を実際の値に書き換えてください
 
 ### terraformコマンドの実行
 ※クライアントPCからデプロイするときはクレデンシャルファイルが必要（terraform-local-sample.envを参考）
