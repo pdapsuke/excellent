@@ -27,15 +27,8 @@ export default defineNuxtConfig({
     define: {  // define: https://ja.vitejs.dev/config/shared-options.html#define
       // グローバル定数の定義
       'process.env.DEBUG': false,
-      'window.global': {} // これ書かないと npm run dev 失敗する
-
+      'window.global': {} // ブラウザ上でamplifyライブラリが参照する。
     },
-    // これ書かないと npx nuxi build 失敗する
-    resolve: {
-      alias: {
-        './runtimeConfig': './runtimeConfig.browser'
-      }
-    }
   },
   // 実行時参照したいグローバルな変数を定義
   runtimeConfig: {
